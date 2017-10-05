@@ -1,0 +1,188 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l('Profile') }}
+{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+{{ form_open() }}
+<div class="settings">
+	<div class="row ">
+		<div class="tabbable tabs-left">
+			<div class="col-xs-12 col-sm-3 settingsTabs">
+				{% set current_page = 'user_settings' %}
+				{% include "settings/tabs.twig" %}
+			</div>
+			<div class="col-xs-12 col-sm-9 settingsContent">
+				<div class="row tab-content">
+					
+					<div class="col-xs-12">
+						<h4 class="tab-title"><i class="fa fa-user"></i>  {{ l('Profile') }}</h4>
+					</div>
+					
+					<div class="col-xs-12">
+						<label for="username">
+						{{ l('USERNAME') }} 
+						(<small>{{ l('USERNAME_CAN_NOT_CHANGED') }}</small>)
+						</label>
+
+						{% if input_post('username') is not empty %}
+							{% set username = input_post('username') %}
+						{% else %}
+							{% set username = currentUser.row('username') %}
+						{% endif %}
+						<input type="text" name="username" class="form-control" id="username" placeholder="{{ l('Username') }}" value="{{ username }}" disabled="disabled"/>
+
+						<button type="button" data-toggle="modal" data-target="#changePW" class="btn btn-default">{{ l("Change password") }}</button>
+					
+					</div>
+					
+					<div class="col-xs-12">
+						{% if input_post('email') is not empty %}
+							{% set email = input_post('email') %}
+						{% else %}
+							{% set email = currentUser.row('email') %}
+						{% endif %}
+						<label for="email">{{ l('E-mail') }}</label>
+						<input type="text" name="email" class="form-control" id="email" placeholder="{{ l('E-mail') }}" value="{{ email }}" />
+					</div>
+
+					<div class="col-xs-12 col-md-6">
+						{% if input_post('firstname') is not empty %}
+							{% set firstname = input_post('firstname') %}
+						{% else %}
+							{% set firstname = currentUser.row('firstname') %}
+						{% endif %}
+						<label for="firstname">{{ l('First name') }}</label>
+						<input type="text" name="firstname" class="form-control" id="firstname" placeholder="{{ l('First name') }}" value="{{ firstname }}" />
+					</div>
+					
+					<div class="col-xs-12 col-md-6">
+						{% if input_post('lastname') is not empty %}
+							{% set lastname = input_post('lastname') %}
+						{% else %}
+							{% set lastname = currentUser.row('lastname') %}
+						{% endif %}
+						<label for="lastname">{{ l('Last name') }}</label>
+						<input type="text" name="lastname" class="form-control" id="lastname" placeholder="{{ l('Last name') }}" value="{{ lastname }}" />
+					</div>
+
+					<div class="col-xs-12">
+						<label for="fbuserid">{{ l('Facebook user ID') }}</label>
+						{% if input_post('fbuserid') is not empty %}
+							{% set fbuserid = input_post('fbuserid') %}
+						{% else %}
+							{% set fbuserid = currentUser.row('fbuserid') %}
+						{% endif %}
+						<input type="text" name="fbuserid" class="form-control" id="fbuserid" placeholder="{{ l('Facebook user ID')}}" value="{{ fbuserid }}"/>
+					</div>
+					
+					<div class="col-xs-12 col-md-6">
+						<input type="submit" name="save" value="{{ l('SAVE_CHANGES') }}" class="btn btn-primary" />
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</form>
+
+{# Change password modal #}
+<div id="changePW" class="modal fade" role="dialog" data-backdrop="static">
+  	<div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal">&times;</button>
+	        <h4 class="modal-title">{{ l("Password password") }}</h4>
+	      </div>
+	      <div class="modal-body">
+	      	<div class="changePWAlertBox"></div>
+	      	<div class="row">
+	      		<div class="col-xs-12">
+	      			<label for="oldPassword">{{ l('Current password') }}</label>
+		      		<input type="password" id="oldPassword"  name="oldPassword" class="form-control">
+		      	</div>
+		      	<div class="col-xs-12 col-sm-6">
+		      		<label for="oldPassword">{{ l('New password') }}</label>
+		      		<input type="password" name="newPassword" id="newPassword" class="form-control">
+		      	</div>
+		      	<div class="col-xs-12 col-sm-6">
+		      		<label for="oldPassword">{{ l('Repeat New password') }}</label>
+		      		<input type="password" name="reNewPassword" id="reNewPassword" class="form-control">
+		      	</div>
+	      	</div>
+	      </div>
+	      <div class="modal-footer">
+          	<button type="button" class="btn btn-default" data-dismiss="modal">{{ l('CLOSE') }}</button>
+          	<button type="button" id="changePWModalBtn" class="btn btn-primary">{{ l('Change password') }}</button>
+        </div>
+	  	</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block javascripts_footer %}
+    {{ parent() }}
+    <script src="{{ assets('theme/default/js/helpers.js') }}"></script>
+
+    <script>
+    	$( "#changePWModalBtn" ).click(function(){
+
+        	$(".changePWAlertBox").html("");
+        
+          kp_preloader("on","#changePW .modal-body");
+      
+          $.ajax({
+            url: '{{ base_url("settings/home/change_password") }}',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/x-www-form-urlencoded',
+            data: {
+              old_password: $('#oldPassword', "#changePW").val(),
+              new_password: $('#newPassword', "#changePW").val(),
+              re_new_password: $('#reNewPassword', "#changePW").val(),
+              {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')  
+            },
+            success: function( data, textStatus, jQxhr ){
+                if(data.status == "success"){
+
+                  htmlData = "<ul>";
+                  if(data.message !== null && typeof data.message === 'object'){
+                    Object.keys(data.message).forEach(function(key) {
+                        htmlData += "<li>" + data.message[key] + "</li>";
+                    });
+                  }else{
+                    htmlData += "<li>" + data.message + "</li>";
+                  }
+
+                  htmlData += "</ul>";
+                  alertBox(htmlData,"success",".changePWAlertBox",false,true);
+                 
+                 }else if(data.status == "notice"){
+                    alertBox(data.message,"warning",".changePWAlertBox",false,true);
+                 }else{
+                
+                  htmlData = "<ul>";
+                  if(data.message !== null && typeof data.message === 'object'){
+                    Object.keys(data.message).forEach(function(key) {
+                        htmlData += "<li>" + data.message[key] + "</li>";
+                    });
+                  }else{
+                    htmlData += "<li>" + data.message + "</li>";
+                  }
+                  htmlData += "</ul>";
+                  alertBox(htmlData,"danger",".changePWAlertBox",false,true);
+                }
+        
+              
+            },
+            error: function( jqXhr, textStatus, errorThrown ){ console.log(errorThrown); },
+            complete: function() {
+              kp_preloader("off","#changePW .modal-body");
+            }
+        });
+      });
+    </script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.twig" %}
+
+{% block title %}{{ l('404 Page not found') }}{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+  body { background: #fff; text-align: center; padding: 100px; }
+  h1 { font-size: 50px; }
+  body { font: 20px Helvetica, sans-serif; color: #333; }
+  article { display: block; text-align: left; width: 650px; margin: 0 auto; }
+  a { color: #dc8100; text-decoration: none; }
+  a:hover { color: #333; text-decoration: none; }
+</style>
+{% endblock %}
+{% block header %}
+{% endblock %}
+
+{% block body %}
+  <article>
+    <h1>{{ l('Oops!') }}</h1>
+    <div>
+        <p>{{ l("We can't seem to find the page you're looking for.") }}</p>
+        <br>
+        <p><a href="{{ base_url() }}">{{ l('Home page') }}</a></p>
+    </div>
+</article>
+<br />
+<br />
+<br />
+<br />
+{% endblock %}
+
+{% block javascripts %}
+{% endblock %}

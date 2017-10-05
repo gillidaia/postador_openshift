@@ -1,0 +1,857 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}{{ l('Home') }}{% endblock %}
+
+{% block body %}
+{{ parent() }}
+<div class="homeMessageBox"></div>
+{{ form_open('', 'id="postForm" name="postForm"') }}
+<div class="row">
+    <div class="col-sm-6">
+    {% include "home/form.twig" %}
+    </div>
+	<div class="col-sm-6">
+    {% include "home/preview.twig" %}
+    </div>
+</div>
+{% include "home/details.twig" %}
+{% include "home/groupstable.twig" %}
+</form>
+{% endblock %}
+
+{# Load resources #}
+{% block stylesheets %}
+	{{ parent() }}
+  	<link href="{{ assets('theme/default/css/bootstrap-datetimepicker.min.css') }}" rel="stylesheet" type="text/css" />
+
+	<link rel="stylesheet" type="text/css" href="{{ assets('vendor/elfinder/themes/css/jquery-ui.min.css') }}">
+	<link rel="stylesheet" type="text/css" href="{{ assets('vendor/elfinder/css/elfinder.min.css') }}">
+
+	<link rel="stylesheet" type="text/css" href="{{ assets('theme/default/css/emojionearea.min.css') }}">
+
+	{% if useDataTableP == false %}
+	<link href="{{ assets('theme/default/css/tablesorter.css') }}" rel="stylesheet"> 
+	{% else %}
+	<link href="{{ assets('theme/default/css/datatables.bootstrap.min.css') }}" rel="stylesheet">
+	{% endif %}
+
+{% endblock %}
+
+{% block head_js %}
+	<script src="{{ assets('vendor/elfinder/themes/js/jquery-ui.min.js') }}"></script>
+	{{ parent() }}
+	<script src="{{ assets('theme/default/js/libs/emojione.min.js') }}"></script>
+{% endblock %}
+
+{% block javascripts_footer %}
+	{{ parent() }}
+	<script src="{{ assets('theme/default/js/post_form.js') }}"></script>
+	<script src="{{ assets('theme/default/js/postpreview.js') }}"></script>
+	<script src="{{ assets('theme/default/js/libs/moment.min.js') }}"></script>
+	<script src="{{ assets('theme/default/js/libs/bootstrap-datetimepicker.min.js') }}"></script>
+	<script src="{{ assets('theme/default/js/libs/emojionearea.min.js') }}"></script>
+	
+	<script src="{{ assets('vendor/elfinder/themes/js/elfinder.min.js') }}"></script>
+	{% if l('LANG_I18N') is not empty and l('LANG_I18N') != "en" %}
+		<script src="{{ assets('vendor/elfinder/themes/js/i18n/elfinder.' ~ l('LANG_I18N') ~ '.js') }}"></script>
+	{% endif %}
+
+	{% if useDataTableP == false %}
+		<script src="{{ assets('theme/default/js/libs/jquery.tablesorter.min.js') }}"></script>
+	{% else %}
+		<script src="{{ assets('theme/default/js/jquery.dataTables.min.js') }}"></script>
+		<script src="{{ assets('theme/default/js/dataTables.bootstrap.min.js') }}"></script>
+	{% endif %}
+
+	<script>
+		$(document).ready(function(){
+
+			{% if useDataTableP == false %}
+			    $("#groupsDataTable").tablesorter({
+					delayInit: true,
+					showProcessing: true,
+					headers: {
+						0: { 
+							sorter: false,
+							parser: false,
+							empty:"bottom",
+							extractor:"none",
+							string: "max" 
+						},
+						1: { 
+							sorter: true,
+							parser: "text",
+							empty:"bottom",
+							extractor:"none",
+							string: "max" 
+						},
+						2: { 
+							sorter: false,
+							parser: false,
+							empty:"bottom",
+							extractor:"none",
+							string: "max" 
+						},
+						4: { 
+							sorter: false,
+							parser: false,
+							empty:"bottom",
+							extractor:"none",
+							string: "max" 
+						},	
+					}
+			    });
+
+			    /* reAttched Checkbo Event*/
+			    $("#checkbox-all").click(function () {
+					$('#groupsDatabale tbody input[type="checkbox"],.dataTable tbody input[type="checkbox"],#datatable tbody input[type="checkbox"]').prop('checked', this.checked);
+				});
+
+			{% else %}
+				var translations = {
+			            "lengthMenu": "{{ l('Display %s records per page','_MENU_') }}",
+			            "zeroRecords": "{{ l('No records available') }}",
+						"info": "{{ l('Showing %s to %s of %s ','_START_','_END_','_TOTAL_') }}",
+			            "infoFiltered": "{{ l('(filtered from %s total records)','_MAX_') }}",
+			            "search":  "{{ l('Search') }}",
+			            "paginate": {
+					        "first": "{{ l('First') }}",
+					        "last": "{{ l('Last') }}",
+					        "next":  "{{ l('Next') }}",
+					        "previous":   "{{ l('Previous') }}",
+					    }
+				};
+
+			    var groupsDataTable = $('#groupsDataTable').DataTable({
+					"aaSorting": [],
+					"bSort": true,
+					"responsive": true,
+			        "aoColumnDefs": [{
+			            'bSortable': false,
+			            'aTargets': [0]
+			        }],
+			        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+					"iDisplayLength": 100,
+					"language": translations,
+			    });
+		  	{% endif %}
+
+		    $("#postForm #message").emojioneArea({
+		        autoHideFilters: false,
+		        pickerPosition: "bottom",
+		        autocomplete: false,
+		        events: {
+		         	keydown: function (editor, event) {
+				      $( "#postForm #message" ).trigger('propertychange');
+				    },
+				    emojibtn_click: function (button, event) {
+				      $( ".emojionearea-editor" ).trigger('keydown');
+				    }
+		        }
+		    });
+
+		});
+
+	{# If repeat once disbale repeat at #}
+    $( "#repeatEvery" ).change(function() {
+      if($(this).val() == 0){
+        $("#start_on").prop('disabled', true);
+        $("#end_on").prop('disabled', true);
+      }else{
+         $("#start_on").prop('disabled', false);
+         $("#end_on").prop('disabled', false);
+      }
+    });
+
+    $( "#schedulePauseAfter" ).change(function() {
+      if($(this).val() == 0){
+        $("#scheduleResumeAfter").prop('disabled', true);
+      }else{
+         $("#scheduleResumeAfter").prop('disabled', false);
+      }
+    });
+   
+
+	{# --------------- Post form section  --------------- #}
+	// Global variables 
+	$(document).ready(function() {
+		
+		$("#postForm .linkSubFieldsToggle button").click(function(){
+			$("#postForm .linkSubFields").stop().toggle('fast');
+		});
+
+		$("#postForm .itemPriceFieldsToggle button").click(function(){
+			$("#postForm .ItemDetails").stop().toggle('fast');
+		});
+
+		$("#postForm #scheduledpost").click(function(){
+			$("#postForm .scheduledpost").stop().toggle('fast');
+		});
+
+     	$('#scheduledPostTime').datetimepicker({
+     		format: '{{ date_format_js }} HH:mm',
+     		defaultDate: new Date(),
+     	});
+     	$('#start_on').datetimepicker({format: '{{ date_format_js }} HH:mm'});
+     	$('#end_on').datetimepicker({format: '{{ date_format_js }} HH:mm'});
+
+	    // Trigger click event
+		$('.postTypeActive').click();
+
+		// #postForm #post click event => Post validation 
+		$("#postForm #post").click(function(){
+			$("#postForm .messageBox").removeClass("error");
+			$("#postForm .messageBox").html("");
+			
+			if($("#postForm #postType").val() == "message" && $.trim($("#postForm #message").val()) == ""){
+				alertBox('{{ l('POST_EMPTY') }}',"danger","#postForm .messageBox",true);	
+			}else if($("#postForm #postType").val() == "link" && $.trim($("#postForm #link").val()) == ""){
+				alertBox('{{ l('POST_EMPTY') }}',"danger","#postForm .messageBox",true);	
+			}else if($("#postForm #postType").val() == "image" && $.trim($("#postForm #imageURL_0").val()) == ""){
+				alertBox('{{ l('POST_EMPTY') }}',"danger","#postForm .messageBox",true);	
+			}else{
+				post();
+			}
+		});
+	});
+	/*
+	*
+	* Send : get the current group id from the group[] array, call getJSON() function
+	* @param nextGroup int : counter
+	*
+	*/
+	function send()
+	{
+		var unexpectedPostingError = true;
+		var currentGroup = groups[nextGroup];
+		POST_IN_PROGRESS = true;
+
+		// update the left time
+		var duree = random(parseInt($("#postForm #defTime").val()),parseInt($("#postForm #defTime").val())+30) * (countGroup-nextGroup);
+		TOTALPOSTINGTIME = duree*1000;
+
+		// Clear errors
+		$('.postingStatusErrors').html("");
+		
+		if(!$('#selectgroup_' + currentGroup).is(":checked")) return false;
+		
+		// Get post data
+		var params = {};
+		
+		params["groupID"] = currentGroup;
+		params["postType"] = $("#postForm #postType").val();
+		params["{{ config_item('csrf_token_name') }}"] = getCookie('{{ config_item('csrf_cookie_name') }}');
+		
+		if($.trim($("#postForm #message").val()) != ""){
+			params["message"] = $("#postForm #message").val();
+		}
+		
+		if($("#postForm #postType").val() == "image"){
+			if($.trim($("#postForm #imageURL_0").val()) != ""){
+				params["image_one"] = $("#postForm #imageURL_0").val();
+				params["image_two"] = $("#postForm #imageURL_1").val();
+				params["image_three"] = $("#postForm #imageURL_2").val();
+				params["image_four"] = $("#postForm #imageURL_3").val();
+				params["image_five"] = $("#postForm #imageURL_4").val();
+				params["image_six"] = $("#postForm #imageURL_5").val();
+			}
+		}
+
+		if($("#postForm #postType").val() == "video"){
+			if($.trim($("#postForm #video").val()) != ""){
+				params["video"] = $("#postForm #video").val();
+			}
+			if($.trim($("#postForm #video-description").val()) != ""){
+				params["description_video"] = $("#postForm #video-description").val();
+			}
+		}
+
+		params['itemprice'] = $("#postForm #itemprice").val();
+		params['itemname'] = $("#postForm #itemname").val();
+		
+		if($("#postForm #postType").val() == "link"){
+			if($.trim($("#postForm #link").val()) != "") 
+				params["link"] = $("#postForm #link").val();
+			
+			if($(".linkSubFields").is(':visible')){
+				if($.trim($("#postForm #picture").val()) != "") 
+					params["picture"] = $("#postForm #picture").val(); 
+			
+				if($.trim($("#postForm #name").val()) != "") 
+					params["name"] = $("#postForm #name").val();
+			
+				if($.trim($("#postForm #caption").val()) != "") 
+					params["caption"] = $("#postForm #caption").val();
+			
+				if($.trim($("#postForm #description").val()) != "") 
+					params["description"] = $("#postForm #description").val();
+			}
+		}
+			kp_preloader("on");
+			$(".postStatus_"+currentGroup).html("<span class='badge'>{{ l('Sending post...') }}<span>");
+			$.ajax({
+		        url: 'posts/send_post',
+		        dataType: 'json',
+		        type: 'post',
+		        contentType: 'application/x-www-form-urlencoded',
+		        data: params,
+		        success: function( data, textStatus, jQxhr ){
+				  	if(data.status == "success"){
+				  		$('#'+currentGroup).removeClass('postingError');
+						$('#'+currentGroup).addClass('postingSuccess');
+						$(".postStatus_"+currentGroup).html("<a href='https://www.facebook.com/"+data.id+"' target='_blank'><i class='fa fa-check' aria-hidden='true'></i> {{ l('VIEW_POST') }}</a>");
+					}else{
+						$('#'+currentGroup).removeClass('postingSuccess');
+						$('#'+currentGroup).addClass('postingError');
+						htmlData = "";
+	                	if(data.message !== null && typeof data.message === 'object'){
+							Object.keys(data.message).forEach(function(key) {
+							    htmlData += data.message[key]+" ";
+							});
+	                	}else{
+	                		htmlData = data.message;
+	                	}
+						$(".postStatus_"+currentGroup).html("<i class='fa fa-info-circle' aria-hidden='true'></i> "+htmlData);
+					}
+		        },
+		        error: function( jqXhr, textStatus, errorThrown ){
+		        	$('#'+currentGroup).removeClass('postingSuccess');
+					$('#'+currentGroup).addClass('postingError');
+					$(".postStatus_"+currentGroup).html("<i class='fa fa-info-circle' aria-hidden='true'></i> "+textStatus+" : "+errorThrown);
+		        },
+		        complete: function(){
+		        	kp_preloader("off");
+		        }
+		    });
+	}
+
+
+	/*
+	* Post : This function runs the posting process
+	*
+	*/
+	function post(){
+		
+		timeDeff = random($("#postForm #defTime").val()*1000,($("#postForm #defTime").val()*1000)+30000);
+
+		// Clear groups, groupCount vars
+		groups = [];
+		countGroup = 0;
+		
+		// Get all checked groups
+		$('.groupName:visible .fbnode:checked').each(function(){
+			groups.push($(this).val());
+			countGroup++;
+		});
+
+		if(countGroup != 0){
+			alertBox('{{ l('POSTING_WAIT') }}',"info","#postForm .messageBox",true);		
+			// Set the left time
+			var duree = random(parseInt($("#postForm #defTime").val()),parseInt($("#postForm #defTime").val())+30) * (countGroup-1);
+			TOTALPOSTINGTIME = duree*1000;
+	
+			$(".totalPostTime").html("&sim; "+Math.round(((parseInt($("#postForm #defTime").val())+15 )* (countGroup-1))/60).toFixed(2)+" "+'{{ l('MINUTES') }}');	
+			
+			startTimer();
+			send();
+			postingInterval = setTimeout(posting,timeDeff);
+			
+		}else{
+			alertBox('{{ l('CHOOSE_GROUP_TO_POSTIN') }}',"danger","#postForm .messageBox",true);	
+		}
+		
+	}
+
+		$(document).ready(function() {
+			
+			var imageCount = $(".multiImages > .input-group").length;
+
+		    $(".multiImages").on( 'click', '.mediaLibraryImage', function () {
+		    	$('#mediaLibModalImage').modal('show');
+			    getMediaLib();
+			    $("#URLFrom").val("image");
+			    $("#image_number").val($(this).val());
+		    });
+
+		    $(".multiImages").on( 'click', '.removeImage', function () {
+		    	$(this).parent().remove();
+		    	imageCount--;
+		    	$(".multiImages input").trigger('propertychange');
+		    });
+
+		    $(".addNewImageField").click(function(){
+		    	if(imageCount > 5 ){
+		    		return false;
+		    	}
+		    	var field = "<div class='input-group'>";
+					field += "<input type='text' name='imageURL' class='form-control' id='imageURL_"+imageCount+"' value='' placeholder='{{ l('Image URL.') }}' />";
+					field += "<div class='input-group-btn'>";
+					field += "<button type='button' class='btn btn-default mediaLibraryImage' value='"+imageCount+"'>{{ l('Upload') }}</button>";
+					field += "</div><i class='fa fa-times removeImage' aria-hidden='true'></i>";
+					field += "</div>";
+				$('.multiImages').append(field);
+				imageCount++;
+				$(".multiImages input").trigger('propertychange');
+		    });
+
+			$('#mediaLibraryImageLink').click(function(){
+				$('#mediaLibModalImage').modal('show');
+			    getMediaLib();
+			    $("#URLFrom").val("link");
+			});
+
+			$('#mediaLibraryVideo').click(function(){
+				$('#mediaLibModalVideo').modal('show');
+			    var fv = $('#elfinderVideo').elfinder({
+			        url : 'upload/upload_video',
+			        onlyMimes: ['video/mp4','video/x-msvideo','video/mp4','video/mpeg','video/3gpp','video/quicktime','video/ogg','video/webm'],
+			        docked: false,
+			        lang: '{{ l("LANG_I18N") }}',
+			        dialog: { width: 600, modal: true },
+			        closeOnEditorCallback: true,
+			        uiOptions: { toolbar : [
+	                    // toolbar configuration
+	                    ['home', 'up'],
+	                    ['mkdir', 'upload'],
+	                    ['quicklook'],
+	                    ['rm'],
+	                    ['duplicate', 'rename'],
+	                    ['search'],
+	                    ['view']
+	                ]},
+			        getFileCallback: function(data) {
+			            $('#video').val(data.url);
+			            $( "#video" ).trigger('propertychange');
+			            $('#mediaLibModalVideo').modal('hide');
+			        }
+			    }).elfinder('instance');
+			});
+
+		});
+
+		function getMediaLib(){
+		    $('#elfinderImage').elfinder({
+		        url : 'upload/upload_image',
+		        onlyMimes: ['image'],
+		        docked: false,
+		        lang: '{{ l("LANG_I18N") }}',
+		        dialog: { width: 600, modal: true },
+		        closeOnEditorCallback: true,
+		        uiOptions: { toolbar : [
+                    // toolbar configuration
+                    ['home', 'up'],
+                    ['mkdir', 'upload'],
+                    ['quicklook'],
+                    ['rm'],
+                    ['duplicate', 'rename'],
+                    ['search'],
+                    ['view']
+                ]},
+		        getFileCallback: function(data) {
+		        	if($("#URLFrom").val() == "image"){
+						$("#imageURL_"+$("#image_number").val()).val(data.url);
+						$("#imageURL_"+$("#image_number").val()).trigger('propertychange');
+		        	}else{
+		        		$("#picture").val(data.url);
+		        		$( "#picture" ).trigger('propertychange');
+		        	}
+			        $('#mediaLibModalImage').modal('hide');
+			    }
+		    }).elfinder('instance');
+		}
+
+	{# Saving post #}
+	$("#postForm #savepost").click(function(){
+		if($.trim($("#postForm #message").val()) == "" && $.trim($("#postForm #link").val()) == "" && $.trim($("#postForm #imageURL_0").val()) == "" && $.trim($("#postForm #video").val()) == ""){
+			alertBox('{{ l("POST_EMPTY") }}',"danger","#postForm .messageBox",true,true);
+		}else{
+			$('#postTitleModal').modal('show');
+		}
+	});	
+
+	$("#savePostModal").click(function(){
+		if($.trim($("#postTitleModal #postTitle").val()) != ""){
+			
+			kp_preloader("on","#postTitleModal .modal-body");
+			$("#savePostModal").prop('disabled', true);
+
+			var params = {};
+
+			params['post_title'] = $("#postTitleModal #postTitle").val();
+			params['post_type'] = $("#postForm #postType").val();
+			params['message'] =  $("#postForm #message").val();
+			params['link'] = $("#postForm #link").val();
+
+			params['image_one'] = $("#postForm #imageURL_0").val();
+			params['image_two'] = $("#postForm #imageURL_1").val();
+			params['image_three'] = $("#postForm #imageURL_2").val();
+			params['image_four'] = $("#postForm #imageURL_3").val();
+			params['image_five'] = $("#postForm #imageURL_4").val();
+			params['image_six'] = $("#postForm #imageURL_5").val();
+
+			params['itemprice'] = $("#postForm #itemprice").val();
+			params['itemname'] = $("#postForm #itemname").val();
+
+			params['video'] = $("#postForm #video").val();
+			params['description_video'] = $("#postForm #video-description").val();
+
+			params['{{ config_item('csrf_token_name') }}'] = getCookie('{{ config_item('csrf_cookie_name') }}');
+
+			if($(".linkSubFields").is(':visible')){
+				params['picture'] = $("#postForm #picture").val();
+				params['name'] = $("#postForm #name").val();
+				params['caption'] = $("#postForm #caption").val();
+				params['description'] = $("#postForm #description").val();
+			}
+
+			$.ajax({
+				url: '{{ base_url("posts/add") }}',
+				dataType: 'json',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: params,
+				success: function( data, textStatus, jQxhr ){
+					if(data.status == "success"){
+						alertBox(data.message,"success","#postTitleModal .messageBoxModal",false,false);
+						$('#postId').val(data.post_id);
+					}else{
+						if(data.message !== null && typeof data.message === 'object'){
+		                    htmlData = "<ul>";
+		                    Object.keys(data.message).forEach(function(key) {
+		                        htmlData += "<li>" + data.message[key] + "</li>";
+		                    });
+		                    htmlData += "</ul>";
+		                  }else{
+		                    htmlData = data.message;
+		                  }
+		                  alertBox(htmlData,"danger","#postTitleModal .messageBoxModal",false,false);
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){ 
+				  console.log(errorThrown);
+				  alertBox("{{ l('Unable to complete your request') }}","danger","#postTitleModal .messageBoxModal",false,false);
+				},
+				complete: function(){
+					$("#savePostModal").prop('disabled', false);
+					kp_preloader("off","#postTitleModal .modal-body");
+				}
+			});
+		}else{
+			alertBox('{{ l('CHOOSE_TITLE_POST') }}',"danger","#postTitleModal .messageBoxModal",true);
+		}
+	});
+
+	{# Update post #}
+	$("#postForm #updatepost").click(function(){
+
+		if($.trim($("#postForm #message").val()) == "" && $.trim($("#postForm #link").val()) == "" && $.trim($("#postForm #imageURL_0").val()) == "" && $.trim($("#postForm #video").val()) == ""){
+			alertBox('{{ l("POST_EMPTY") }}',"danger","#postForm .messageBox",true,true);
+		}else{
+			kp_preloader("on");
+
+			var params = {};
+
+			params['post_id'] = $("#postForm #postId").val();
+			params['post_type'] = $("#postForm #postType").val();
+
+			params['post_title'] = $("#postTitleModal #postTitle").val();
+			params['post_type'] = $("#postForm #postType").val();
+			params['message'] =  $("#postForm #message").val();
+			params['link'] = $("#postForm #link").val();
+
+			params['image_one'] = $("#postForm #imageURL_0").val();
+			params['image_two'] = $("#postForm #imageURL_1").val();
+			params['image_three'] = $("#postForm #imageURL_2").val();
+			params['image_four'] = $("#postForm #imageURL_3").val();
+			params['image_five'] = $("#postForm #imageURL_4").val();
+			params['image_six'] = $("#postForm #imageURL_5").val();
+
+			params['itemprice'] = $("#postForm #itemprice").val();
+			params['itemname'] = $("#postForm #itemname").val();
+
+			params['video'] = $("#postForm #video").val();
+			params['description_video'] = $("#postForm #video-description").val();
+
+			params['{{ config_item('csrf_token_name') }}'] = getCookie('{{ config_item('csrf_cookie_name') }}');
+
+			if($(".linkSubFields").is(':visible')){
+				params['picture'] = $("#postForm #picture").val();
+				params['name'] = $("#postForm #name").val();
+				params['caption'] = $("#postForm #caption").val();
+				params['description'] = $("#postForm #description").val();
+			}
+
+			$.ajax({
+				url: '{{ base_url("posts/update") }}',
+				dataType: 'json',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: params,
+				success: function( data, textStatus, jQxhr ){
+					if(data.status == "success"){
+						alertBox(data.message,"success",false,true,true);
+					}else{
+						if(data.message !== null && typeof data.message === 'object'){
+		                    htmlData = "<ul>";
+		                    Object.keys(data.message).forEach(function(key) {
+		                        htmlData += "<li>" + data.message[key] + "</li>";
+		                    });
+		                    htmlData += "</ul>";
+		                  }else{
+		                    htmlData = data.message;
+		                  }
+		                  alertBox(htmlData,"danger",false,false,true);
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){ 
+				  console.log(errorThrown);
+				  alertBox("{{ l('Unable to complete your request') }}","danger",false,true,true);
+				},
+				complete: function(){
+					kp_preloader("off");
+				}
+			});
+			
+		}
+	});	
+
+	{# ----------------------- Saving schedule ------------------------ #}
+	$("#postForm #saveScheduledPost").click(function(){
+		// Clear groups, groupCount vars
+		groups = [];
+		countGroup = 0;
+		
+		// Get all checked groups
+		$('.groupName:visible .fbnode:checked').each(function(){
+			groups.push($(this).val());
+			countGroup++;
+		});
+
+		if($("#postForm #postId").val() == ""){
+			alertBox("{{ l('PLEASE_SAVE_POST_FIRST') }}","danger","#postForm .messageBox",true);	
+		}else if(countGroup == 0){
+			alertBox("{{ l('CHOOSE_GROUP_TO_POSTIN') }}","danger","#postForm .messageBox",true);	
+		}else{
+
+			kp_preloader("on","#postForm .preloader");
+
+			var pi = $("#scheduledPostInterval","#postForm").val();
+			var apf = $("#scheduleResumeAfter","#postForm").val();
+
+			var post_interval = $(".schedulePI input[type='radio']:checked","#postForm").val() == "minute" ? pi : pi*60 ;
+			var resume_after = $(".autoPause input[type='radio']:checked","#postForm").val() == "minute" ? apf : apf*60 ;
+			
+			$("#postForm .messageBox").html("");
+			
+			// Disable save schedule post
+			$("#postForm #saveScheduledPost").prop('disabled', true);
+				
+			$.ajax({
+				url: '{{ base_url("schedules/action/add") }}',
+				dataType: 'json',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: {
+					run_at: $("#scheduledPostTime","#postForm").val(),
+					post_interval: post_interval,
+					nodes: JSON.stringify(groups),
+					post_id: $("#postForm #postId").val(),
+					post_app: $("#scheduledPostApp","#postForm").val(),
+					fb_account: $("#scheduledFbAccount","#postForm").val(),
+					pause_after: $("#schedulePauseAfter","#postForm").val(),
+					resume_after: resume_after,
+					
+					repeat_every: $("#repeatEvery","#postForm").val(),
+          			end_on: $("#end_on","#postForm").val(),
+
+					{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+				},
+				success: function( data, textStatus, jQxhr ){
+					if(data.status == "success"){
+						alertBox(data.message,"success","#postForm .messageBox",false);
+					}else{
+						if(data.message !== null && typeof data.message === 'object'){
+		                    htmlData = "<ul>";
+		                    Object.keys(data.message).forEach(function(key) {
+		                        htmlData += "<li>" + data.message[key] + "</li>";
+		                    });
+		                    htmlData += "</ul>";
+		                }else{
+		                    htmlData = data.message;
+		                }
+		                alertBox(htmlData,"danger","#postForm .messageBox",false);
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){ 
+				  console.log(errorThrown);
+				  alertBox("{{ l('Unable to complete your request') }}","danger","#postForm .messageBox",false);
+				},
+				complete: function() {
+					// Re-enable save schedule post
+					$("#postForm #saveScheduledPost").prop('disabled', false);
+					kp_preloader("off","#postForm .preloader");
+				}
+			});	
+		}
+	});
+
+
+	{# Nodes categories #}
+	$('.groupsOptions').on('click','#deleteSelectedNodes', function() {
+		nodes = [];
+		// Get all checked nodes
+		$('.groupName:visible .fbnode:checked').each(function(){
+			nodes.push($(this).val());
+		});
+
+		$.ajax({
+			url: '{{ base_url("nodes_categories/remove_nodes") }}',
+			dataType: 'json',
+			type: 'post',
+			contentType: 'application/x-www-form-urlencoded',
+			data: { 
+				category_id: $("#nodescategory").val(),
+				nodes: JSON.stringify(nodes),
+				{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+			},
+			success: function( data, textStatus, jQxhr ){
+				if(data.status == "success"){
+				for (var i = 0; i < nodes.length; i++ ) {
+					$( "#" + nodes[i] ).css('background','#ffcccc');
+					$( "#" + nodes[i] ).fadeOut(500, function() { $(this).remove(); });
+					}
+				}else{
+					alertBox(data.message,"danger",true,true);
+				}
+			},
+			error: function( jqXhr, textStatus, errorThrown ){ 
+			  console.log(errorThrown);
+			  alertBox('{{ l('Unable to complete your request') }}',"danger",true,true);
+			}
+		});
+	});
+
+	var $nodes = [];
+	$('.groupsOptions').on('click','#addSelectedNodes', function() {
+		// Get all checked nodes
+		nodes = [];
+		$('.groupName:visible .fbnode:checked').each(function(){
+			nodes.push($(this).val());
+		});
+		// Clear message box
+		$(".addCateMsgBoxModal").html("");
+		// and finally show the modal
+		$( '#addToCategoryModal' ).modal({ show: true });
+		return false;
+	});
+
+	$('#modalAddCateBtn').click(function() {
+
+		// Clear message box
+		$(".addCateMsgBoxModal").html("");
+
+		// Choos category 
+		if($('#addToCategoryModal .nodescategory').val() == ""){
+			alertBox('{{ l('Choose a category') }}',"danger",".addCateMsgBoxModal",false);
+		}else{
+
+			$("#modalAddCateBtn").prop('disabled', true);
+
+			$.ajax({
+				url: '{{ base_url("nodes_categories/add_nodes") }}',
+				dataType: 'json',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: { 
+					category_id: $('#addToCategoryModal .nodescategory').val(),
+					nodes: JSON.stringify(nodes),
+					{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+				},
+				success: function( data, textStatus, jQxhr ){
+					if(data.status == "success"){
+						alertBox(data.message,"success",".addCateMsgBoxModal",false);
+					}else{
+						if(data.message !== null && typeof data.message === 'object'){
+		                    htmlData = "<ul>";
+		                    Object.keys(data.message).forEach(function(key) {
+		                        htmlData += "<li>" + data.message[key] + "</li>";
+		                    });
+		                    htmlData += "</ul>";
+		                }else{
+		                    htmlData = data.message;
+		                }
+						alertBox(htmlData,"danger",".addCateMsgBoxModal",false);
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){ 
+				  console.log(errorThrown);
+				  $("#modalAddCateBtn").prop('disabled', false);
+				  alertBox("{{ l('Unable to complete your request') }}","danger",".addCateMsgBoxModal",false);
+				}
+			});
+
+			$("#modalAddCateBtn").prop('disabled', true);
+		}
+	});
+
+
+	function startTimer(){
+		var h = Math.floor(TOTALPOSTINGTIME / 36e5),
+	     	m = Math.floor((TOTALPOSTINGTIME % 36e5) / 6e4),
+	     	s = Math.floor((TOTALPOSTINGTIME % 6e4) / 1000);
+		
+	    h= (h<10)?"0"+h: h;
+	    m= (m<10)?"0"+m: m;
+	    s= (s<10)? "0"+s : s;
+		
+	    $(".leftTime").html("&sim; "+h+":"+m+":"+s);
+	    TOTALPOSTINGTIME = TOTALPOSTINGTIME - 1000;
+			
+	   if( h==0 && m==0 && s==0 ){
+			clearTimeout(leftTime);
+			$(".leftTime").html("{{ l('Done') }}");
+			alertBox("{{ l('POSTING_COMPLETED') }}","success","#postForm .messageBox",true);	
+			$("#postForm #post").prop('disabled', false);
+		}else{
+			$("#postForm #post").prop('disabled', true);
+			leftTime = setTimeout(startTimer,1000);
+			$("#pauseButton").prop('disabled', false);
+			$("#pauseButton").removeClass("btnDisabled");
+		}
+	}
+	
+	var xhrGetSiteDetails = null;
+	function GetSiteDetails(url,callback){
+		if(xhrGetSiteDetails!==null) xhrGetSiteDetails.abort();
+		xhrGetSiteDetails = $.ajax({
+	        url: "{{ base_url('helpers/get_url_info') }}",
+	        dataType: "json",
+	        type: "post",
+	        data: { 
+				url: url,
+				{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+			},
+	        success: callback,
+	        error: function(request, status, error) {}
+	    });
+		
+	}
+
+	{% if useDataTableP == false %}
+		function NodesFilter() {
+			var filter = $("#nodesFilterFiled").val().toUpperCase();
+		 	$("#groupsDataTable tbody tr").each(function(){
+			 	firstElem = $(this).find(".groupTitle span").text().toUpperCase();
+			 	secondElem = $(this).find(".nodeType").text().toUpperCase();
+			 	thirdElem = $(this).find(".privacyAndLikes").text().toUpperCase();
+				if (firstElem.indexOf(filter) > -1 || secondElem.indexOf(filter) > -1 || thirdElem.indexOf(filter) > -1) {
+		        	$(this).show();
+		      	} else {
+		        	$(this).hide();
+		      	}
+			});
+		}
+	{% endif %}
+	
+	</script>
+{% endblock %}

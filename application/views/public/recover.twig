@@ -1,0 +1,67 @@
+{% extends "base_public.twig" %}
+
+{% block title %}
+	{{ l('ACCOUNT_RECOVERY') }}
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+<div class="container">
+
+  {% if input_get("email") and input_get("code") %}
+    {% set recover = user.UserResetPWCode(input_get("email"),input_get("code")) %}
+
+    {% if recover %}
+        <form class="form-recover" method="POST">
+          <h2 class="form-recover-heading">
+          	<a href="{{ base_url() }}">
+            {% if app_settings['site_logo_large'] is empty %}
+              <img src="{{ assets('theme/default/images/kp_logo_large.png') }}" alt="logo">
+            {% else %}
+              <img src="{{ app_settings['site_logo_large'] }}" alt="logo">
+            {% endif %}
+        	</a>
+          </h2>
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">{{ l('RESET_PASSWORD') }}</h3>
+            </div>
+            <div class="panel-body">
+              <div class="recoverAlerts"></div>
+              <input type="hidden" name="token" id="token" value="<?php echo Token::generate() }}" />
+              <p class="well">{{ l('USERNAME') }} : {{ recover.username }}</p>
+              <label for="password"  class="sr-only">{{ l('NEW_PASSWORD') }}</label>
+              <input type="password" id="password" name="password" class="form-control" placeholder="{{ l('NEW_PASSWORD') }}" required />
+
+              <label for="repassword"  class="sr-only">{{ l('RE_ENTER_NEW_PASSWORD') }}</label>
+              <input type="password" name="repassword" id="repassword" placeholder="{{ l('RE_ENTER_NEW_PASSWORD') }}" class="form-control" required />
+
+              <input name="resetPassword" class="btn btn-lg btn-primary btn-block" type="submit" value="{{ l('RESET_PASSWORD') }}" />
+            </div>
+          </div>
+        </form>
+    {% else %}
+        <div class='alert alert-danger' role='alert'>
+        <span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>
+        {{ l("Invalid recover code.") }}
+        </div>
+    {% endif %}
+
+  {% else %}
+    <form class="form-recover" method="POST">
+      <h2 class="form-recover-heading"><img class="logo" src="theme/default/images/logo_large.png" alt="recover"></h2>
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <h3 class="panel-title">{{ l('FIND_ACCOUNT') }}</h3>
+        </div>
+        <div class="panel-body">
+          {% include "blocks/flash_bag.twig" %}
+          <label for="email"  class="sr-only">{{ l('EMAIL') }}</label>
+          <input type="text" id="email" name="email" class="form-control" placeholder="{{ l('ENTER_YOUR_EMAIL') }}" required />
+          <input name="recover" class="btn btn-lg btn-primary btn-block" type="submit" value="{{ l('FIND_ACCOUNT') }}" />
+        </div>
+      </div>
+    </form>
+  {% endif %}
+
+{% endblock %}

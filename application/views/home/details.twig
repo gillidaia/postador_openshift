@@ -1,0 +1,25 @@
+<div class="panel panel-default postingDetailsPanel">
+  <div class="panel-body">
+    <div class="postingDetails">
+		{{ l('Groups') }} : <strong class="groupsCount">{{ fbaccount.GroupsCount() }}</strong> | 
+		{{ l('Pages') }} : <strong class="pagesCount">{{ fbaccount.PagesCount() }}</strong> 
+		
+		{% if app_settings['enable_instant_post'] == 1 %}
+			|
+			{{ l('ELAPSED') }} : <strong><span class="totalPostTime">-</span></strong> | 
+			{{ l('TIME_LEFT') }} : <strong><span class="leftTime">-</span></strong>
+		{% endif %}
+	</div>
+	{% if app_settings['enable_instant_post'] == 1 %}
+	<div class="controls">
+		<button id="pauseButton" class="btn btn-primary" onclick="postPause()" disabled>
+			<i class="fa fa-pause" aria-hidden="true"></i> {{ l('PAUSE') }} 
+		</button>
+		
+		<button id="resumeButton" class="btn btn-primary"  onclick="postResume()" disabled>
+			<i class="fa fa-play" aria-hidden="true"></i> {{ l('RESUME') }}
+		</button>
+	</div>
+	{% endif %}
+  </div>
+</div>

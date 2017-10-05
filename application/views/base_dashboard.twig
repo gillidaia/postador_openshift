@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html dir="{{ l("DIR") }}">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="{{ app_settings.site_description }}">
+  <meta name="author" content="PandiSoft - pandisoft.com">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+  {% if app_settings['site_favicon'] is empty %}
+    <link rel="icon" type="image/png" href="{{ assets('theme/default/images/kp_favicon.png?v=' ~ assets_version) }}" >
+  {% else %}
+    <link rel="icon" type="image/png" href="{{ app_settings['site_favicon'] }}" >
+  {% endif %}
+  <title>{% block title %}{% endblock %} | {{ app_settings.sitename }}</title>
+
+
+  {% block stylesheets %}
+    <link href="{{ assets('theme/default/bootstrap/css/bootstrap.min.css?v=' ~ assets_version) }}" rel="stylesheet">
+    <link href="{{ assets('theme/default/css/font-awesome.css?v=' ~ assets_version) }}" rel="stylesheet" />
+    <link href="{{ assets('theme/default/css/dashboard.min.css?v=' ~ assets_version) }}" rel="stylesheet" />
+    <link href="{{ assets('theme/default/css/skins/skin-blue.min.css?v=' ~ assets_version) }}" rel="stylesheet" />
+    <link href="{{ assets('theme/default/css/preloader.min.css?v=' ~ assets_version) }}" rel="stylesheet" type="text/css" />
+    <link href="{{ assets('theme/default/css/theme_color.css?v=' ~ assets_version) }}" rel="stylesheet" type="text/css" />
+    <link href="{{ assets('theme/default/css/general.css?v=' ~ assets_version) }}" rel="stylesheet" type="text/css" />
+    {% if lang("DIR") == "rtl" %}
+      <link href="{{ assets('theme/default/css/rtl.css?v=' ~ assets_version) }}" rel="stylesheet" />
+    {% endif %}
+  {% endblock %}
+
+    {% block javascripts %}
+      <script src="{{ assets('theme/default/js/jquery.js?v=' ~ assets_version) }}"></script>
+      <script src="{{ assets('theme/default/js/libs/dashboard.min.js?v=' ~ assets_version) }}"></script>
+      <script src="{{ assets('theme/default/bootstrap/js/bootstrap.min.js?v=' ~ assets_version) }}"></script>
+      <script src="{{ assets('theme/default/js/libs/preloader.min.js?v=' ~ assets_version) }}"></script>
+      <script src="{{ assets('theme/default/js/helpers.js?v=' ~ assets_version) }}"></script>
+    {% endblock %}
+
+    {% block head_js %}
+      <script type="text/javascript">
+        $('[data-toggle="kp_tooltip"]').tooltip();
+      </script>
+    {% endblock %}
+
+    {{ app_settings['head_js']|raw }}
+
+</head>
+<body class="hold-transition skin-blue sidebar-mini {% if sidebar_status == "true" %}sidebar-collapse{% endif %}">
+<div class="wrapper">
+  {% block header %}
+  <header class="main-header">
+    <a href="{{ base_url('') }}" title="Home" class="logo hidden-xs">
+      <span class="logo-mini">
+        {% if app_settings['site_logo_50'] is empty %}
+          <img src="{{ assets('theme/default/images/kp_logo_50.png?v=' ~ assets_version) }}" alt="logo">
+          {% else %}
+            <span class="logo-lg">
+            <img src="{{ app_settings['site_logo_50']~'?v='~assets_version }}" alt="logo">
+          </span>
+        {% endif %}
+      </span>
+
+      <span class="logo-lg">
+        {% if app_settings['site_logo'] is empty %}
+          <img src="{{ assets('theme/default/images/kp_logo.png?v=' ~ assets_version) }}" alt="logo">
+          {% else %}
+            <span class="logo-lg">
+          <img src="{{ app_settings['site_logo']~'?v='~assets_version }}" alt="logo">
+        </span>
+        {% endif %}
+      </span>
+    </a>
+
+    <nav class="navbar navbar-static-top" role="navigation">
+      <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+        <span class="sr-only">Toggle navigation</span>
+      </a>
+      <a href="{{ base_url('') }}" title="Home" class="logo visible-xs">
+        <span class="logo-lg">
+          {% if app_settings['site_logo'] is empty %}
+            <img src="{{ assets('theme/default/images/kp_logo.png?v=' ~ assets_version) }}" alt="logo">
+            {% else %}
+              <span class="logo-lg">
+            <img src="{{ app_settings['site_logo']~'?v='~assets_version }}" alt="logo">
+          </span>
+          {% endif %}
+        </span>
+      </a>
+      <div class="navbar-custom-menu hidden-xs">
+        <ul class="nav navbar-nav">
+          <li class="dropdown user user-menu">
+            <a href="#" class="dropdown-toggle UserProfil" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                {% if fbaccount.UserDefaultFbAccount() is not empty %}
+                <img src='https://graph.facebook.com/{{ fbaccount.UserDefaultFbAccount() }}/picture?redirect=1&height=32&width=32&type=normal' width='32' height='32' style='vertical-align:middle;' class="img-circle" onerror="this.src = '{{ assets('theme/default/images/facebookUser.jpg') }}'"/>
+                {% else %}
+                  <img src='{{ assets('theme/default/images/facebookUser.jpg') }}' width='32' height='32' style='vertical-align:middle;' />
+                {% endif %}
+                <span class="userFullName">
+                  {% if fbaccountDetails.row() is not empty %}
+                    <span class="hidden-sm">{{ fbaccountDetails.row('name')|capitalize }}</span>
+                  {% else %}
+                    <span class="hidden-sm">Facebook User</span>
+                  {% endif %}
+                </span>
+              </a>
+            <ul class="dropdown-menu">
+                {% set fbacounts = fbaccount.getAll() %}
+                {% if fbacounts is not empty %} 
+                    {% for fba in fbacounts %}
+                        <li>
+                        <a href="{{ base_url('settings/fb_accounts/switch_fb_account/' ~ fba.fb_id) }}" >
+                          <img src='https://graph.facebook.com/{{ fba.fb_id }}/picture?redirect=1&height=40&width=40&type=normal' style='vertical-align:middle;' width='32px' height='32px' class="fbProfileImg" onerror="this.src = '{{ assets('theme/default/images/facebookUser.jpg') }}'"/> {{ fba.firstname|capitalize ~ " " ~ fba.lastname|capitalize }}
+                        </a>
+                      </li>
+                  {% endfor %}
+                {% else %}
+                    <li><a href='#'>{{ l('No facebook account available') }}</a></li>
+                {% endif %}
+                <li role="separator" class="divider"></li>
+                <li><a href="{{ base_url('settings/fb_accounts') }}">{{ l('Add facebook account') }}</a></li>
+                <li role="separator" class="divider"></li>
+                <li class='{% if current_page == 'user_settings' %}active{% endif %}'>
+                  <a href='{{ base_url('settings') }}' >
+                    <i class='fa fa-fw fa-user'></i>
+                    {{ l('Profile') }}
+                  </a>
+                </li>
+
+                <li class='{% if current_page == 'general_settings' %}active{% endif %}'>
+                  <a href='{{ base_url('settings/general_settings') }}' >
+                    <i class='fa fa-fw fa-tasks'></i>
+                    {{ l('General settings') }}
+                  </a>
+                </li>
+
+                <li class='{% if current_page == 'publish_settings' %}active{% endif %}'>
+                  <a href='{{ base_url('settings/publish_settings') }}' >
+                    <i class='fa fa-fw fa-clipboard'></i>
+                    {{ l('Publish settings') }}
+                  </a>
+                </li>
+
+                <li class='{% if current_page == 'fb_accounts' %}active{% endif %}'>
+                  <a href='{{ base_url('settings/fb_accounts') }}' >
+                    <i class='fa fa-fw fa-facebook'></i>
+                    {{ l('Facebook accounts') }}
+                  </a>
+                </li>
+
+                <li class='{% if current_page == 'fbapps' %}active{% endif %}'>
+                  <a href='{{ base_url('settings/fbapps') }}' >
+                    <i class='fa fa-fw fa-plug'></i>
+                    {{ l('Facebook Apps') }}
+                  </a>
+                </li>
+                <li role="separator" class="divider"></li>
+                <li>
+                  <a href='{{ base_url('logout') }}'>
+                    <i class="fa fa-sign-out" aria-hidden="true"></i>
+                    {{ l("LOGOUT") }}
+                  </a>
+                </li>
+              </ul>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <aside class="main-sidebar">
+    <section class="sidebar">
+      <ul class="sidebar-menu" data-widget="tree">
+        <li class="treeview visible-xs">
+          <a href="#" class="dropdown-toggle UserProfil" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                {% if fbaccount.UserDefaultFbAccount() is not empty %}
+                <img src='https://graph.facebook.com/{{ fbaccount.UserDefaultFbAccount() }}/picture?redirect=1&height=32&width=32&type=normal' width='32' height='32' style='vertical-align:middle;' class="img-circle" onerror="this.src = '{{ assets('theme/default/images/facebookUser.jpg') }}'"/>
+                {% else %}
+                  <img src='{{ assets('theme/default/images/facebookUser.jpg') }}' width='32' height='32' style='vertical-align:middle;' />
+                {% endif %}
+                <span class="userFullName">
+                  {% if fbaccountDetails.row() is not empty %}
+                    <span class="hidden-sm">{{ fbaccountDetails.row('name')|capitalize }}</span>
+                  {% else %}
+                    <span class="hidden-sm">Facebook User</span>
+                  {% endif %}
+                </span>
+                <i class="fa fa-angle-left pull-right"></i>
+              </a>
+          <ul class="treeview-menu">
+            {% set fbacounts = fbaccount.getAll() %}
+                {% if fbacounts is not empty %} 
+                    {% for fba in fbacounts %}
+                        <li>
+                        <a href="{{ base_url('settings/fb_accounts/switch_fb_account/' ~ fba.fb_id) }}" >
+                          <img src='https://graph.facebook.com/{{ fba.fb_id }}/picture?redirect=1&height=40&width=40&type=normal' style='vertical-align:middle;' width='32px' height='32px' class="fbProfileImg" onerror="this.src = '{{ assets('theme/default/images/facebookUser.jpg') }}'"/> {{ fba.firstname|capitalize ~ " " ~ fba.lastname|capitalize }}
+                        </a>
+                      </li>
+                  {% endfor %}
+                {% else %}
+                    <li>
+                      <a href='#'>{{ l('No facebook account available') }}</a></li>
+                {% endif %}
+                <li>
+                  <a href="{{ base_url('settings/fb_accounts') }}">
+                    <i class="fa fa-plus"></i>
+                    <span>{{ l('Add facebook account') }}</span>
+                  </a>
+                </li>
+          </ul>
+        </li>
+
+        <li>
+          <a href='{{ base_url() }}'>
+          <i class="fa fa-home"></i><span>{{ l("Home") }}</span>
+          </a>
+        </li>
+
+        <li class="treeview">
+          <a href='{{ base_url('settings') }}'>
+            <i class="fa fa-cog"></i>
+            <span>{{ l("SETTINGS") }}</span>
+            <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+          </a>
+          <ul class="treeview-menu">
+            <li class='{% if current_page == 'general_settings' %}active{% endif %}'>
+              <a href='{{ base_url('settings/general_settings') }}' >
+                <i class='fa fa-fw fa-tasks'></i>
+                <span>{{ l('General settings') }}</span>
+              </a>
+            </li>
+
+            <li class='{% if current_page == 'publish_settings' %}active{% endif %}'>
+              <a href='{{ base_url('settings/publish_settings') }}' >
+                <i class='fa fa-fw fa-clipboard'></i>
+                <span>{{ l('Publish settings') }}</span>
+              </a>
+            </li>
+
+            <li class='{% if current_page == 'fb_accounts' %}active{% endif %}'>
+              <a href='{{ base_url('settings/fb_accounts') }}' >
+                <i class='fa fa-fw fa-facebook'></i>
+                <span>{{ l('Facebook accounts') }}</span>
+              </a>
+            </li>
+
+            <li class='{% if current_page == 'fbapps' %}active{% endif %}'>
+              <a href='{{ base_url('settings/fbapps') }}' >
+                <i class='fa fa-fw fa-plug'></i>
+                <span>{{ l('Facebook Apps') }}</span>
+              </a>
+            </li>
+            {% if user.hasPermission('admin') == true %}
+            <li class='{% if current_page == 'app_settings' %}active{% endif %}'>
+              <a href='{{ base_url('settings/app_settings') }}' ><i class='fa fa-fw fa-cogs'></i> 
+                <span class="hidden-xs">{{ l('App settings') }}</span>
+              </a>
+            </li>
+            <li class='{% if current_page == 'roles' %}active{% endif %}'>
+              <a href='{{ base_url('settings/roles') }}' >
+                <i class='fa fa-fw fa-users'></i>
+                <span>{{ l('Roles') }}</span>
+              </a>
+            </li>
+            <li class='{% if current_page == 'modules_manager' %}active{% endif %}'>
+              <a href='{{ base_url('settings/modules_manager') }}' >
+                <i class='fa fa-th-large'></i>
+                <span>{{ l('Modules manager') }}</span>
+              </a>
+            </li>
+            {% endif %}
+           </ul>
+        </li>
+
+        <li class="treeview">
+          <a href='#'>
+            <i class="fa fa-folder-open"></i>
+            <span>{{ l("Publishing") }}</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li>
+              <a href="{{ base_url('posts') }}">
+              <i class="fa fa-clipboard  "></i> 
+              <span>{{  l("Saved posts") }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ base_url('schedules') }}">
+              <i class="fa fa-calendar"></i> 
+                <span>{{ l("Scheduled posts") }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="{{ base_url('schedules/logs') }}">
+              <i class="fa fa-folder-open-o"></i> 
+                <span>{{ l("Schedule Logs") }}</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+          
+        <li>
+          <a href='{{ base_url('insights') }}'>
+            <i class="fa fa-bar-chart"></i>
+            <span>{{ l("insights") }}</span>
+          </a>
+        </li>
+ 
+        {% if user.hasPermission('admin') == true %}
+            <li>
+              <a href='{{ base_url('users_manager') }}'>
+                <i class="fa fa-user"></i>
+                <span>{{ l("USERS") }}</span>
+              </a>
+            </li>
+        {% endif %}
+
+        {% if user.canUse("comments") and kpModules.auto_comment is defined %}
+        <li>
+          <a href='{{ base_url("comments") }}'>
+            <i class="fa fa-comment" aria-hidden="true"></i>
+            <span>{{ l("Comments") }}</span>
+          </a>
+        </li>
+        {% endif %}
+
+        {% if user.canUse("join_groups") and kpModules.join_groups is defined %}
+        <li>
+          <a href='{{ base_url("join_groups") }}'>
+            <i class="fa fa-facebook-official" aria-hidden="true"></i>
+            <span>{{ l("Join groups") }}</span>
+          </a>
+        </li>
+        {% endif %}
+
+        {% if kpModules.kp_faq is defined %}
+        <li>
+          <a href='{{ base_url("faq") }}'>
+            <i class="fa fa-question-circle" aria-hidden="true"></i>
+            <span>{{ l("FAQs") }}</span>
+          </a>
+        </li>
+        {% endif %}
+
+        {% set items = json_decode(app_settings['nav_items'],TRUE) %}
+
+        {% for item in items %}
+          <li>
+            <a href='{{ item.url }}' target="{{ item.target }}">
+              <i class="fa fa-{{ item.icon }}" aria-hidden="true"></i>
+              <span>{{ l(item.text)|capitalize }}</span></a>
+            </li>
+        {% endfor %}
+
+        <li>
+          <a href='{{ base_url('logout') }}' title="{{ l("LOGOUT") }}">
+            <i class="fa fa-sign-out"></i> 
+            <span>{{ l("LOGOUT") }}</span>
+          </a>
+        </li>
+
+      </ul>
+    </section>
+  </aside>
+  <div style="margin-top:50px"></div>
+  {% endblock %}
+  <div class="content-wrapper">
+    <section class="content-header">
+      {% block flash_bag %}
+        {% include "blocks/flash_bag.twig" %}
+      {% endblock %}
+      {% block ads %}
+        {% include "blocks/ads.twig" %}
+      {% endblock %}
+    </section>
+    <section class="content container-fluid">
+      {% block body %}
+        {% endblock %}
+    </section>
+  </div>
+  <footer class="main-footer">
+    {% block footer %}
+      <p class="footer">{{ l('COPYRIGHT') }} &copy {{ "now"|date("Y") }} 
+        {% if app_settings['footer_text'] is empty %}
+          Powered by <a href='https://pandisoft.com' target='_blank'>Kingposter</a>
+        {% else %}
+          {{ app_settings['footer_text']|raw }}
+        {% endif %}
+
+        {% if user is not empty and user.isLoggedIn() and user.hasPermission('admin') == true %} 
+          - {{ l('Version') }} {{ app_version }}
+        {% endif %}
+      </p>
+    {% endblock %}
+  </footer>
+</div>
+<div class="scrollTop">
+      <i class="fa fa-arrow-circle-up" aria-hidden="true"></i>
+    </div>
+  {% block javascripts_footer %}
+  <script src="{{ assets('theme/default/js/jsui.js?v=' ~ assets_version) }}"></script>
+  <script>
+    var site_url = "{{ base_url() }}";
+    var assets_url = "{{ assets() }}";
+    var csrf_token_name = "{{ config_item('csrf_token_name') }}";
+    var csrf_token =  getCookie('{{ config_item('csrf_cookie_name') }}');
+  </script>
+  {% endblock %}
+
+  {{ app_settings['footer_js']|raw }}
+
+</body>
+</html>

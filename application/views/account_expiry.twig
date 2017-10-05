@@ -1,0 +1,22 @@
+{% extends "base_dashboard.twig" %}
+{% block title %}{{ l('Home') }}{% endblock %}
+{% block stylesheets %}
+	{{ parent() }}
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400" rel="stylesheet">
+	<style>
+		.payment {
+		   	font-family: 'Lato', sans-serif;
+		    font-size: 22px;
+		    text-align: center;
+		    padding: 20px;
+		    font-weight: 300;
+		}
+	</style>
+{% endblock %}
+{% block body %}
+	<div class="alert alert-danger"> 
+  		{{ l('Your account has expired') }}
+	</div>
+	<div class="payment">
+	</div>
+{% endblock %}

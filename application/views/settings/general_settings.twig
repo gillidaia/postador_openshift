@@ -1,0 +1,66 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l('General settings') }}
+{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+<form method='POST' class="settings" novalidate>
+	<div class="row">
+		<div class="tabbable tabs-left">
+			<div class="col-xs-12 col-sm-3 settingsTabs">
+				{% set current_page = 'general_settings' %}
+				{% include "settings/tabs.twig" %}
+			</div>
+			<div class="col-xs-12 col-sm-9 settingsContent">
+				<div class="tab-content">
+
+					{{ form_open() }}
+
+					<h4 class="tab-title"><i class="fa fa-tasks"></i> {{ l('General settings') }}</h4>
+
+					<div class="input-group">
+						{% if input_post('perPage') is not empty %}
+							{% set perPage = input_post('perPage') %}
+						{% else %}
+							{% set perPage = userOptions.row('per_page') %}
+						{% endif %}
+						<label for="perPage">{{ l('Records per page') }}</label>
+						<input type="number" name="perPage" class="form-control" id="perPage" placeholder="{{ l('Records per page') }}" value="{{ perPage }}" />
+					</div>
+
+					<div class="input-group">
+						<label for="timezone">
+							{{ l('TIMEZONE') }} | {{ l('CURRENT_TIME') }} : {{ 'NOW'|date(date_format ~ " H:i") }}
+						</label>
+						{% if input_post('timezone') is not empty %}
+							{% set userTimezone = input_post('timezone') %}
+						{% else %}
+							{% set userTimezone = userData['timezone'] is not empty ? userData['timezone'] : 'UTC' %}
+						{% endif %}
+						<select name='timezone' id="timezone" class="form-control">
+					    	{% for tz in timezones %}
+					      		<option value="{{ tz }}" {% if tz == userTimezone %}selected{% endif %}>{{ tz }}</option>
+					    	{% endfor %}
+					    </select>
+					</div>
+
+					<div class="input-group">
+						<label for="lang">{{ l('LANGUAGE') }}</label>
+						<select name='lang' id="lang" class="form-control">
+							{% set currentUserLang = userData['lang'] is not empty ? userData['lang'] : DEFAULT_LANG %}
+							{% for lang in lang.availableLanguages %}
+								{% set selected = currentUserLang == lang ? 'selected' : '' %} 
+								<option value='{{ lang }}' {{ selected }}>{{ lang|capitalize }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					
+					<input type="submit" name="save" value="{{ l('Save changes') }}" class="btn btn-primary" />
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+{% endblock %}

@@ -1,0 +1,462 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l("Users") }}
+{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link href="{{ assets('theme/default/css/bootstrap-datetimepicker.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">
+      <i class="fa fa-users" aria-hidden="true"></i> {{ l('Users') }}
+      <span class="TotalRecords">{{ l('Showing %s of %s ',perPage,total_posts) }}</span>
+    </h3>
+  </div>
+  <div class="panel-body has-responsive-table" id="usersSection">
+  <form action="" method="POST">
+
+    <div class="row">
+      <div class="col-lg-6">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewUser">{{ l('ADD_NEW_USER') }}</button>
+        <a href="{{ base_url("users_manager/export_emails") }}" class="btn btn-primary">{{ l('Export users E-emails') }}</a>
+        <button type="button" class="btn btn-danger" id="deleteUserBtn">{{ l('Delete') }}</button>
+      </div>
+      <div class="col-lg-6">
+        <div class="seachBarContainer">
+          <div class="seachBar">
+            <input type='text' placeholder="{{ l('Search by username or email') }}" id='SearchUser' name="SearchUser" class="form-control" />
+            <div class="autocomplete-suggestions"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <table class="table table-bordered table-striped usersList"  width="100%">
+      <thead>
+        <tr>
+          <td width='20px'>
+          <input type='checkbox' name='check-all' id="checkbox-all" class='check-all checkbox-style'  value='Check All'>
+          <label for="checkbox-all"></label>
+          <td>{{ l('USERNAME') }}</td>
+          <td class="hidden-sm hidden-xs">{{ l('EMAIL') }}</td>
+          <td class="hidden-xs">{{ l('Joined on') }}</td>
+          <td class="hidden-sm hidden-xs">{{ l('FACEBOOK_PROFILE') }}</td>
+          <td class="hidden-xs">{{ l('ROLE') }}</td>
+          <td>{{ l('STATUS') }}</td>
+          <td></td>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+          <tr>
+            <td>
+            {% if u.id != user.data.id %}
+              <input type='checkbox' name='checkbox[]' id='checkbox-{{ u.id }}' class='checkbox  checkbox-style' value='{{ u.id }}'>
+              <label for='checkbox-{{ u.id }}'></label>
+            {% endif %}
+            </td>
+            <td>{{ u.username }}</td>
+            <td class="hidden-sm hidden-xs">{{ u.email }}</td>
+            <td class="hidden-xs">{{ u.signup|date(date_format) }}</td>
+            <td  class="hidden-sm hidden-xs"><a href='https://facebook.com/{{ u.fbuserid }}' title='{{ u.firstname }} {{ u.lastname }}' target='_blank'>{{ l('VIEW_PROFILE') }} <i class="fa fa-external-link" aria-hidden="true"></i></a></td>
+            <td class="hidden-xs">{{ l(u.role_name)|capitalize }}</td>
+            <td>
+              {% if u.active == 1 %}
+                {% set active_btn = "primary" %}
+              {% else %}
+                {% set active_btn = "default" %}
+              {% endif %}
+              <button type="button" class="btn btn-{{ active_btn }} userToggleAccountBtn"  value="{{ u.id }}">
+                <i class="fa fa-fw fa-toggle-on" aria-hidden="true"></i>
+              </button>
+            </td>
+            <td>
+              <button class='btn btn-primary editUserBtn' value='{{ u.id }}'>
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                <span class="hidden-sm hidden-xs">{{ l('EDIT') }}</span>
+              </button>
+              <a href='{{ base_url("users_manager/profile/" ~ u.id) }}' class='btn btn-primary'>
+                <i class="fa fa-list-alt fa-fw"></i> 
+                <span class="hidden-sm hidden-xs">{{ l('Details') }}</span>
+              </a>
+            </td>
+          </tr>
+        {% else %}
+            <tr>
+              <td colspan="8">{{ l('No records found!') }}</td>
+            </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if pagination %}
+      {{ pagination|raw}}
+    {% endif %}
+    </form>
+  </div>
+</div>
+  
+{% include "users_manager/add_user.twig" %}
+{% include "users_manager/edit_user.twig" %}
+
+{# Box variables #}
+{% set box_id = "user" %}
+{% set delete_msg = l("Are you sure you want to delete the selected accounts?") %}
+{% include "blocks/delete_modal.twig" %}
+
+{% endblock %}
+
+{% block javascripts_footer %}
+    {{ parent() }}
+    
+    <script src="{{ assets('theme/default/js/helpers.js') }}"></script>
+    <script src="{{ assets('theme/default/js/libs/moment.min.js') }}"></script>
+    <script src="{{ assets('theme/default/js/libs/bootstrap-datetimepicker.min.js') }}"></script>
+    
+    <script>
+
+    $(function () {
+      $('.expire_on').datetimepicker({format: '{{ date_format_js }}'});
+    });
+
+      {# ------------------------------------- Add new user -------------------------------- #}
+      $( "#newUserBtn" ).click(function(){
+        
+        $(".addNewUserAlertBox").html("");
+        
+        kp_preloader("on","#addNewUser .modal-body");
+
+        $("#addNewUser #newUserBtn").prop('disabled', true);
+
+        $.ajax({
+          url: '{{ base_url("users_manager/add") }}',
+          dataType: 'json',
+          type: 'post',
+          contentType: 'application/x-www-form-urlencoded',
+          data: { 
+            username: $('#username','#addNewUser').val(),
+            email: $('#email','#addNewUser').val(),
+            password: $('#password','#addNewUser').val(),
+            re_password: $('#re_password','#addNewUser').val(),
+            role: $('#role','#addNewUser').val(),
+            expire_on: $('#expire_on','#addNewUser').val(),
+            {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+          },
+          success: function( data, textStatus, jQxhr ){
+            
+              if(data.status == "success"){
+                
+                if(data.message !== null && typeof data.message === 'object'){
+                  htmlData = "<ul>";
+                  Object.keys(data.message).forEach(function(key) {
+                      htmlData += "<li>" + data.message[key] + "</li>";
+                  });
+                  htmlData += "</ul>";
+                }else{
+                  htmlData = data.message;
+                }
+
+                alertBox(htmlData,"success",".addNewUserAlertBox",false,true);
+                $(document).on('hide.bs.modal','#addNewUser', function () {location.reload();});
+
+                // Clear the form 
+                $('#userid', "#addNewUser").val("");
+                $('#username', "#addNewUser").val("");
+                $('#password', "#addNewUser").val("");
+                $('#re_password', "#addNewUser").val("");
+                $('#email', "#addNewUser").val("");
+                $('#expire_on', "#addNewUser").val("");
+
+              }else{
+                
+                if(data.message !== null && typeof data.message === 'object'){
+                  htmlData = "<ul>";
+                  Object.keys(data.message).forEach(function(key) {
+                    htmlData += "<li>" + data.message[key] + "</li>";
+                  });
+                  htmlData += "</ul>";
+                }else{
+                  htmlData = data.message;
+                }
+          
+                alertBox(htmlData,"danger",".addNewUserAlertBox",false,true);
+              }
+          },
+          error: function( jqXhr, textStatus, errorThrown ){ 
+            console.log(errorThrown);
+          },
+          complete: function () {
+            $("#addNewUser #newUserBtn").prop('disabled', false);
+            kp_preloader("off","#addNewUser .modal-body");
+          }
+        });
+      });
+      {# ----------------- End Add new user --------------- #}
+
+
+      {# ----------------- End edit user --------------- #}
+      $( "#editUserAccountModalBtn" ).click(function(){
+        $(".editUserAlertBox").html("");
+        
+          var editUserModel = $('#editUser');
+          kp_preloader("on","#editUser .modal-body");
+      
+          $.ajax({
+            url: '{{ base_url("users_manager/update") }}',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/x-www-form-urlencoded',
+            data: {
+              userid: $('#userid', editUserModel).val(),
+              email: $('#email', editUserModel).val(),
+              password: $('#password', editUserModel).val(),
+              re_password: $('#re_password', editUserModel).val(),
+              role: $('#role', editUserModel).val(),
+              is_admin: $('#is_admin', editUserModel).val(),
+              expire_on: $('#expire_on', editUserModel).val(),
+              {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')  
+            },
+            success: function( data, textStatus, jQxhr ){
+                if(data.status == "success"){
+
+                  htmlData = "<ul>";
+                  if(data.message !== null && typeof data.message === 'object'){
+                    Object.keys(data.message).forEach(function(key) {
+                        htmlData += "<li>" + data.message[key] + "</li>";
+                    });
+                  }else{
+                    htmlData += "<li>" + data.message + "</li>";
+                  }
+
+                  htmlData += "</ul>";
+                  alertBox(htmlData,"success",".editUserAlertBox",false,true);
+                  $(document).on('hide.bs.modal','#editUser', function () {location.reload();});
+                 
+                 }else if(data.status == "notice"){
+                    alertBox(data.message,"warning",".editUserAlertBox",false,true);
+                 }else{
+                
+                  htmlData = "<ul>";
+                  if(data.message !== null && typeof data.message === 'object'){
+                    Object.keys(data.message).forEach(function(key) {
+                        htmlData += "<li>" + data.message[key] + "</li>";
+                    });
+                  }else{
+                    htmlData += "<li>" + data.message + "</li>";
+                  }
+                  htmlData += "</ul>";
+                  alertBox(htmlData,"danger",".editUserAlertBox",false,true);
+                }
+        
+              
+            },
+            error: function( jqXhr, textStatus, errorThrown ){ console.log(errorThrown); },
+            complete: function() {
+              kp_preloader("off","#editUser .modal-body");
+            }
+        });
+      });
+
+      $( ".editUserBtn" ).click(function(){
+        var editUserModel = $('#editUser');
+
+        // initial the modal
+        // Clear message box
+        $(".editUserAlertBox").html("");
+        
+        // Clear the form 
+        $('#userid', editUserModel).val("");
+        $('#username', editUserModel).val("");
+        $('#password', editUserModel).val("");
+        $('#re_password', editUserModel).val("");
+        $('#email', editUserModel).val("");
+        $('#expire_on', editUserModel).val("");
+    
+        userId = $(this).val();
+
+        $('#userid', editUserModel).val(userId);
+
+        kp_preloader("on","#editUser .modal-body");
+
+        $.ajax({
+          url: '{{ base_url("users_manager/user_details") }}',
+          dataType: 'json',
+          type: 'post',
+          contentType: 'application/x-www-form-urlencoded',
+          data: { 
+            userid: userId,
+            {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+          },
+          success: function( data, textStatus, jQxhr ){
+              if(data.status == "success"){
+                $('#username', editUserModel).val(data.user.username);
+                $('#email', editUserModel).val(data.user.email);
+                $('#role', editUserModel).val(data.user.role_id);
+                $('#expire_on', editUserModel).val(moment(data.user.expire_on).format('{{ date_format_js }}'));
+              }else{
+                htmlData = "<ul>";
+                if(data.message !== null && typeof data.message === 'object'){
+                  Object.keys(data.message).forEach(function(key) {
+                      htmlData += "<li>" + data.message[key] + "</li>";
+                  });
+                }else{
+                  htmlData += "<li>" + data.message + "</li>";
+                }
+                htmlData += "</ul>";
+                alertBox(htmlData,"danger",".editUserAlertBox",false,true);
+              }
+          },
+          error: function( jqXhr, textStatus, errorThrown ){ console.log(errorThrown); },
+          complete: function(){
+            kp_preloader("off","#editUser .modal-body");
+          }
+        });
+
+        // and finally show the modal
+        editUserModel.modal("show");
+        return false;
+      });
+
+    $( ".userToggleAccountBtn" ).click(function(){
+      var userid = $( this );
+        $.ajax({
+          url: '{{ base_url("users_manager/toggle_account_status") }}',
+          dataType: 'json',
+          type: 'post',
+          contentType: 'application/x-www-form-urlencoded',
+          data: { 
+            userid: userid.val(),
+            {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+          },
+          success: function( data, textStatus, jQxhr ){
+              if(data.status == "success"){
+                userid.toggleClass( "btn-primary" );
+                userid.toggleClass( "btn-default" );
+                userid.find("i").addClass("fa-toggle-on");
+                userid.find("i").removeClass("fa-exclamation");
+              }else{
+                userid.find("i").addClass("fa-exclamation");
+                userid.find("i").removeClass("fa-toggle-on");
+              }
+          },
+          error: function( jqXhr, textStatus, errorThrown ){ 
+              userid.find("i").addClass("fa-exclamation");
+              userid.find("i").removeClass("fa-toggle-on");
+              console.log(errorThrown); 
+          }
+        });
+    });
+
+    
+    // Instant search
+    {# ----------- Auto complete ---------- #}
+    $("body").mouseup(function (e){
+        e.preventDefault();
+        var container = new Array();
+        container.push($('.autocomplete-suggestions'));
+        $.each(container, function(key, value) {
+            if (!$(value).is(e.target) && $(value).has(e.target).length === 0){
+                $(value).html("");
+            }
+        });
+    });
+
+    var xhr = null;
+    $( "#SearchUser" ).on('input',function(){
+      if(xhr!==null) xhr.abort();
+      $(".autocomplete-suggestions").html("");
+      $(".autocomplete-suggestion").css("display","block");
+      $(".autocomplete-suggestions").append("<div class='autocomplete-suggestion'>{{ l('Searching...') }}</div>");
+      kp_preloader("on");
+      xhr = $.ajax({
+        url: '{{ base_url("users_manager/search") }}',
+        dataType: 'json',
+        type: 'post',
+        contentType: 'application/x-www-form-urlencoded',
+        data: {
+          term: $(this).val(),
+          {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+        },
+        success: function( res, textStatus, jQxhr ){
+          $(".autocomplete-suggestions").html("");
+          if(res.data !== null && typeof res.data === 'object'){
+              nRes = res.data.length > 5 ? 5 : res.data.length;
+              for (i = 0; i < nRes; i++) {
+                htmlData = "<div class='autocomplete-suggestion'>";
+                htmlData += "<a href='{{ base_url('users_manager/profile/') }}"+res.data[i].id+"'><span class='searchU'>"+res.data[i].username+"</span><span class='searchEmail'>"+res.data[i].email+"</span></a>";
+                htmlData += "</div>";
+                 $(".autocomplete-suggestions").append(htmlData);
+              }
+
+              if(res.data.length > 5){
+                $(".autocomplete-suggestions").append("<div class='seeAllResults'><a href='{{ base_url('users_manager/?searchTerm=') }}"+$("#SearchUser").val()+"'>{{ l('See all results') }}</a></div>");
+              }
+
+              if(res.data.length == 0){
+                $(".autocomplete-suggestions").append("<div class='autocomplete-suggestion'>{{ l('No result found') }}</div>");
+              }
+
+            }else{
+              $(".autocomplete-suggestions").append("<div class='autocomplete-suggestion'>{{ l('No result found') }}</div>");
+            }
+        },
+        error: function( jqXhr, textStatus, errorThrown ){ console.log(errorThrown); },
+        complete: function(){
+          kp_preloader("off");
+        }
+      });
+    });
+
+    {# Delete action #}
+    $("#deleteUserBtn").click(function(){
+      if($('.usersList .checkbox:checked').length > 0){
+        $("#delete_user").modal("show");
+      }
+    });
+
+    $(".deleteBtn_user" ).click(function(){
+      
+      kp_preloader("on","#delete_user .modal-body");
+
+      var users = [];
+      $('.usersList .checkbox:checked').each(function(){
+        users.push($(this).val());
+      });
+
+      $.ajax({
+        url: '{{ base_url("users_manager/delete") }}',
+        dataType: 'json',
+        type: 'post',
+        contentType: 'application/x-www-form-urlencoded',
+        data: { 
+          ids: JSON.stringify(users),
+          {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+        },
+        success: function( data, textStatus, jQxhr ){
+          if(data.status == "success"){
+            alertBox(data.message,"success",".deleteAlertBox_user",false,false);
+              $(".deleteBtn_user").prop('disabled', true);
+            $(document).on('hide.bs.modal','#delete_user', function () {location.reload();});
+          }else{
+            alertBox(data.message,"danger",".deleteAlertBox_user",false,false);
+          }
+        },
+        error: function( jqXhr, textStatus, errorThrown ){ 
+          console.log(errorThrown);
+          alertBox("{{ lang.s('Unable to complete your request') }}","danger",".deleteAlertBox_user",false,false);
+        },
+        complete: function(){
+          kp_preloader("off","#delete_user .modal-body");
+        }
+      });
+
+      $('.deleteBox_content_user').html("");
+      
+    });
+
+    </script>
+{% endblock %}

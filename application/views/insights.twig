@@ -1,0 +1,379 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}{{ l('Insights') }}{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+<div class="panel panel-default posts">
+	<div class="panel-heading">
+		<h3 class="panel-title">
+			<i class="fa fa-bar-chart" aria-hidden="true"></i> {{ l("Publishing") }}
+		</h3>
+	</div>
+	<div class="panel-body">
+		<div class="row">
+			<div class="col-xs-12 col-sm-3">
+				<div class="panel panel-default">
+				  <div class="panel-heading">{{ l('Today') }}</div>
+				  <div class="panel-body">
+					<div class="row">
+					    <div class="col-xs-12 text-success">{{ l('Success') }} : 
+					    	<span class="badge badge-success pull-right">{{ Insights_num_day.row('posts')|abs }}</span>
+					    </div>
+					    <div class="col-xs-12 text-danger">
+					    	{{ l('Fail') }} : 
+					    	<span class="badge badge-danger pull-right">{{ Insights_num_day.row('posts_fail')|abs }}</span>
+					    </div>
+					    <div class="col-xs-12 text-primary pull-right">
+					    	{{ l('Total Processed') }} : 
+					    	<span class="badge pull-right">{{ Insights_num_day.row('posts')+Insights_num_day.row('posts_fail')|abs }}</span>
+					    </div>
+					</div>
+				  </div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-sm-3">
+				<div class="panel panel-default">
+				  <div class="panel-heading">{{ l('Last 7 days') }}</div>
+				  <div class="panel-body">
+				  	<div class="row">
+					    <div class="col-xs-12 text-success">
+					    	{{ l('Success') }} : 
+					    	<span class="badge badge-success badge-success pull-right">{{ Insights_num_week.row('posts')|abs }}</span>
+					    </div>
+					    <div class="col-xs-12 text-danger">
+					    	{{ l('Fail') }} : 
+					    	<span class="badge badge-danger pull-right">{{ Insights_num_week.row('posts_fail')|abs }}</span>
+					    </div>
+					    <div class="col-xs-12 text-primary pull-right">
+					    	{{ l('Total Processed') }} : 
+					    	<span class="badge pull-right">{{ Insights_num_week.row('posts')+Insights_num_week.row('posts_fail')|abs }}</span>
+					    </div>
+					</div>
+				  </div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-sm-3">
+				<div class="panel panel-default">
+				  <div class="panel-heading">{{ l('Last 30 days') }}</div>
+				  <div class="panel-body">
+				  	<div class="row">
+					    <div class="col-xs-12 text-success">
+					    	{{ l('Success') }} : 
+					    	<span class="badge badge-success pull-right">{{ Insights_num_month.row('posts')|abs }}</span>
+					    </div>
+					    <div class="col-xs-12 text-danger">
+					    	{{ l('Fail') }} : 
+					    	<span class="badge badge-danger pull-right">{{ Insights_num_month.row('posts_fail')|abs }}</span>
+					    </div>
+					    <div class="col-xs-12 text-primary pull-right">
+					    	{{ l('Total Processed') }} : 
+					    	<span class="badge pull-right">{{ Insights_num_month.row('posts')+Insights_num_month.row('posts_fail')|abs }}</span>
+					    </div>
+					</div>
+				  </div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-sm-3">
+				<div class="panel panel-default">
+				  <div class="panel-heading">{{ l('All time') }}</div>
+				  <div class="panel-body">
+				  	<div class="row">
+					    <div class="col-xs-12 text-success">
+					    	{{ l('Success') }} : 
+					    	<span class="badge badge-success pull-right">{{ Insights_num_alltime.row('posts')|abs }}</span>
+					    </div>
+					    <div class="col-xs-12 text-danger">
+					    	{{ l('Fail') }} : 
+					    	<span class="badge badge-danger pull-right">{{ Insights_num_alltime.row('posts_fail')|abs }}</span>
+					    </div>
+					    <div class="col-xs-12 text-primary pull-right">
+					    	{{ l('Total Processed') }} : 
+					    	<span class="badge pull-right">{{ Insights_num_alltime.row('posts')+Insights_num_alltime.row('posts_fail')|abs }}</span>
+					    </div>
+					</div>
+				  </div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row chart">
+	      <div class="col-xs-12 col-md-6">
+	        <div class="panel panel-default">
+	          <div class="panel-heading">{{ l('Last 7 days') }}</div>
+	          <div class="panel-body">
+	            <div id="last_7_days"></div>
+	          </div>
+	        </div>
+	      </div>
+	      <div class="col-xs-12 col-md-6">
+	        <div class="panel panel-default">
+	          <div class="panel-heading">{{ l('Last 30 days') }}</div>
+	          <div class="panel-body">
+	            <div id="p_last_30_days">
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    </div>
+
+	</div>
+</div>
+
+{% if kpModules.auto_comment is defined %}
+  {% include "@comments/components/insights.twig" %}
+{% endif %}
+
+{% if kpModules.auto_like is defined %}
+  {% include "@autolike/components/insights.twig" %}
+{% endif %}
+
+<div class="row">
+	<div class="col-xs-12 col-md-6">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					<i class="fa fa-facebook" aria-hidden="true"></i> {{ l("My facebook accounts") }}
+				</h3>
+			</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-xs-12 col-sm-4">
+						<div class="panel panel-default">
+						  <div class="panel-heading">{{ l('Total FB accounts') }}</div>
+						  <div class="panel-body">
+						    <strong>{{ total_fb_account|abs }}</strong>
+						  </div>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4">
+						<div class="panel panel-default">
+						  <div class="panel-heading">{{ l('Total Groups') }}</div>
+						  <div class="panel-body">
+						    <strong>{{ total_groups|abs }}</strong>
+						  </div>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4">
+						<div class="panel panel-default">
+						  <div class="panel-heading">{{ l('Total pages') }}</div>
+						  <div class="panel-body">
+						    <strong>{{ total_pages|abs }}</strong>
+						  </div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>		
+	</div>
+	<div class="col-xs-12 col-md-6">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					<i class="fa fa-database" aria-hidden="true"></i> {{ l("My data") }}
+				</h3>
+			</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="panel panel-default">
+						  <div class="panel-heading">{{ l('Saved posts') }}</div>
+						  <div class="panel-body">
+						    <strong>{{ total_sposts|abs }}</strong>
+						  </div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="panel panel-default">
+						  <div class="panel-heading">{{ l('Schedules') }}</div>
+						  <div class="panel-body">
+						    <strong>{{ total_schedules|abs }}</strong>
+						  </div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-xs-12">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					<i class="fa fa-user" aria-hidden="true"></i> {{ l("My account") }}
+				</h3>
+			</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-xs-12 col-sm-6">
+						<ul class="list-group">
+						  <li class="list-group-item">
+						    <span class="badge {% if group.row('max_posts') == Insights_num_day.row('posts') %}
+						    badge-danger
+							{% endif %}">{{ Insights_num_day.row('posts')|abs }} / 
+						    {% if group.row('max_posts') ==  0 %}
+						    	<strong>&infin;</strong>
+						   	{% else %}
+						   		{{ group.row('max_posts') }}
+						    {% endif %}</span>
+						    {{ l('Posts per day') }}
+						  </li>
+						  <li class="list-group-item">
+						    <span class="badge {% if group.row('max_fbaccount') != 0 and group.row('max_fbaccount') == total_fb_account %}
+						    badge-danger
+							{% endif %}">
+							{{ total_fb_account }} / 
+						    {% if group.row('max_fbaccount') ==  0 %}
+						    	<strong>&infin;</strong>
+						   	{% else %}
+						   		{{ group.row('max_fbaccount') }}
+						    {% endif %}</span>
+						    {{ l('Facebook Accounts') }}
+						  </li>
+
+						  {% if kpModules.auto_comment is defined %}
+						  <li class="list-group-item">
+						  	{% if group.row('max_comments') == '-1' %}
+						  		<span class="badge badge-danger">{{ l('Disabled') }}</span>
+						  	{% else %}
+						    <span class="badge {% if group.row('max_comments') != 0 and group.row('max_comments') == total_fb_account %}
+						    badge-danger
+							{% endif %}">
+								{{ total_fb_account }} / 
+							    {% if group.row('max_comments') ==  0 %}
+							    	<strong>&infin;</strong>
+							   	{% else %}
+							   		{{ group.row('max_comments') }}
+							    {% endif %}
+							</span>
+							{% endif %}
+						    {{ l('Auto comments') }} {{ l("Per day") }}
+						  </li>
+						  {% endif %}
+
+						  {% if kpModules.auto_like is defined %}
+						  <li class="list-group-item">
+						  	{% if group.row('max_likes') == '-1' %}
+						  		<span class="badge badge-danger">{{ l('Disabled') }}</span>
+						  	{% else %}
+							    <span class="badge {% if group.row('max_likes') != 0 and group.row('max_likes') == total_fb_account %}
+							    badge-danger
+								{% endif %}">
+									{{ total_fb_account }} / 
+								    {% if group.row('max_likes') ==  0 %}
+								    	<strong>&infin;</strong>
+								   	{% else %}
+								   		{{ group.row('max_likes') }}
+								    {% endif %}
+								</span>
+							{% endif %}
+						    {{ l('Auto likes') }}  {{ l("Per day") }}
+						  </li>
+						  {% endif %}
+
+						  <li class="list-group-item">
+						    {% if group.row('upload_images') ==  1 %}
+						    	<span class="badge badge-success">{{ l('Enabled') }}</span>
+						   	{% else %}
+						   		<span class="badge badge-danger">{{ l('Disabled') }}</span>
+						    {% endif %}
+						    {{ l('Upload Images') }}
+						  </li>
+						  <li class="list-group-item">
+						    {% if group.row('upload_videos') ==  1 %}
+						    	<span class="badge badge-success">{{ l('Enabled') }}</span>
+						   	{% else %}
+						   		<span class="badge badge-danger">{{ l('Disabled') }}</span>
+						    {% endif %}
+						    {{ l('Upload Videos') }}
+						  </li>
+						  
+						  <li class="list-group-item">
+						    {% if group.row('max_upload') != 0 and group.row('max_upload') <= storageSize %}
+						    	<span class="badge badge-danger">
+						    	{{ (storageSize/1000)|number_format }} {{ l('MB') }}  /
+							{% else %}
+								<span class="badge">
+								{{ (storageSize/1000)|number_format(1) }} {{ l('MB') }}  /	
+							{% endif %}
+							 
+						    {% if group.row('max_upload') ==  0 %}
+						    	<strong>&infin;</strong>
+						   	{% else %}
+						   		{{ (group.row('max_upload')/1000)|number_format }} {{ l('MB') }}
+						    {% endif %}</span>
+						    {{ l('Upload Usage') }}
+						  </li>
+
+						</ul>
+					</div>
+					<div class="col-xs-12 col-sm-6">
+						<ul class="list-group">
+						  <li class="list-group-item">
+						    {% if group.row('account_expiry') ==  0 %}
+						    	<span class="badge badge-success">{{ l('Never') }}</span>
+						   	{% else %}
+						   		<span class="badge">{{ current_user['expire_on']|date(date_format) }}</span>
+						    {% endif %}
+						    {{ l('Account expiry in') }}
+						  </li>
+						  <li class="list-group-item">
+						    <span class="badge">{{ l(group.row('name'))|capitalize }}</span>
+						    {{ l('Package') }}
+						  </li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>	
+	</div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script src="{{ assets('theme/default/js/libs/charts.js') }}"></script>
+	<script>google.charts.load('current', {'packages':['corechart']});</script>
+	<script src="{{ assets('theme/default/js/libs/moment.min.js') }}"></script>
+{% endblock %}
+
+{% block javascripts_footer %}
+	{{ parent() }}
+    <script type="text/javascript">
+   		google.charts.setOnLoadCallback(drawChart);
+   		kp_preloader("on",".posts .chart .panel-body");
+    	function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Day', '{{ l('Posts') }}', '{{ l('Posts failed') }}'],
+          {% for r in Insights_week %}
+          	['{{ r.created_at|date(date_format) }}', {{ r.posts }}, {{ r.posts_fail }}],
+          {% else %}
+          	['',0,0]
+          {% endfor %}
+        ]);
+
+        var options = {title: '{{ l('Last 7 days') }}',curveType: 'none',legend: { position: 'top' }};
+
+        var chart = new google.visualization.AreaChart(document.getElementById('last_7_days'));
+        chart.draw(data, options);
+
+        var data = google.visualization.arrayToDataTable([
+          ['Day', '{{ l('Posts') }}', '{{ l('Posts failed') }}'],
+          {% for r in Insights_month %}
+          	['{{ r.created_at|date(date_format) }}', {{ r.posts }}, {{ r.posts_fail }}],
+          {% else %}
+          	['',0,0]
+          {% endfor %}
+        ]);
+
+        var options = {title: '{{ l('Last 30 days') }}s',curveType: 'none',legend: { position: 'top' }};
+       
+        var chart = new google.visualization.AreaChart(document.getElementById('p_last_30_days'));
+        chart.draw(data, options);
+        kp_preloader("off",".posts .chart .panel-body");
+      }
+    </script>
+{% endblock %}

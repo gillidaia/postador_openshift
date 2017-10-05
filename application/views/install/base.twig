@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}{{ app_settings.sitename }}{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {% block css %}
+    <link rel="stylesheet" href="{{ assets('theme/default/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ assets('theme/default/css/font-awesome.css') }}">
+  {% endblock %}
+
+  
+  <script src="{{ assets('theme/default/js/jquery.js') }}"></script>
+
+  <style>
+    .container.install {
+        margin-top: 50px;
+        max-width: 600px;
+    }
+
+    .container.install .card.pv {
+      max-width: 450px;
+      margin-right: auto;
+      margin-left: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+      <div class="container install">
+      {% block mainContent %}
+      
+      {% endblock %}
+      </div>
+
+    <footer>
+        {% block footer %}
+            <section class="footer">
+              <div class="row copyright">
+                <div class="col-lg-12 copyright" style='text-align: center'>
+                  All rights reserved © {{ 'NOW'|date("Y")}} Version {{ app_version }} | Powered by <a href="https://pandisoft.com/" target="_blnak">PandiSoft</a>.
+                </div>
+              </div>
+            </section>
+        {% endblock %}
+    </footer>
+
+
+  </div><!-- End wrapper -->
+
+  {% block javascripts %}
+    <script type="text/javascript" src="{{ assets('theme/default/bootstrap/js/tether.min.js') }}"></script>
+    <script type="text/javascript" src="{{ assets('theme/default/bootstrap/js/bootstrap.min.js') }}"></script>
+  {% endblock %}
+</body>
+</html>

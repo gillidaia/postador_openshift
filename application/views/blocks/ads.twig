@@ -1,0 +1,5 @@
+{% if app_settings.ads_code is not empty %}
+  <div class="adsContainer">
+    {{ app_settings.ads_code|raw }}
+  </div>
+{% endif %}

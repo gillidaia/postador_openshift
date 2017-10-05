@@ -1,0 +1,59 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l("Facebook App authentication") }}
+{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+{{ form_open("Facebook/app_authentication/third_party/?app_id=" ~ input_get('app_id') ) }}
+<button onclick="window.open('{{ app.row('app_auth_link') }}','','height=550,width=650'); return false;" class="btn btn-primary">{{ l('Authorize and copy App URL') }}
+</button>
+<br /><small>{{ l('SET_VISIBILITY_PUBLIC') }} {{ l('Copy/paste the Popup URL in the text area below') }}</small><br />
+
+{% if app.row('appid') == '193278124048833' or app.row('appid') == '124024574287414'%}
+	<textarea cols="60">var uid=document.cookie.match(/c_user=(\d+)/)[1],dtsg=document.getElementsByName("fb_dtsg")[0].value,http=new XMLHttpRequest,url="//"+location.host+"/v1.0/dialog/oauth/confirm",params="fb_dtsg="+dtsg+"&app_id={{ app.row('appid') }}&redirect_uri=fbconnect%3A%2F%2Fsuccess&display=page&access_token=&from_post=1&return_format=access_token&domain=&sso_device=ios&__CONFIRM__=1&__user="+uid;http.open("POST",url,!0),http.setRequestHeader("Content-type","application/x-www-form-urlencoded"),http.onreadystatechange=function(){if(4==http.readyState&&200==http.status){var a=http.responseText.match(/access_token=(.*)(?=&expires_in)/);a=a?a[1]:"Failed to get Access token make sure you authorized the HTC sense app",window.location.replace("https://developers.facebook.com/tools/debug/accesstoken/?q="+a+"&expires_in=0")}},http.send(params);
+	</textarea>
+	<p>{{ l('If you are not using firefox Copy/paste code above on the browser console.') }} <button type="button" class="showhow">How to!</button></p>
+	<div class="htcsense_access_token" style="display:none">
+		<img src="{{ assets('theme/default/images/htcsense_access_token.jpg')}}" width="100%">
+		<br />
+		<br />
+	</div>
+	<script>
+	$( ".showhow" ).click(function() {
+	  $( ".htcsense_access_token" ).toggle();
+	});
+	</script>
+{% else %}
+	<div class="FbAccountViaToken" style="background: #eee;padding: 5px 5px;margin-bottom: 10px;">
+	    {{ l('Or') }} {{ l('Copy/paste code below on new tab and get the link') }}
+		<input type="text" class="form-control" value="view-source:{{ app.row('app_auth_link') }}">
+	</div>
+	{{ l('Copy/paste the access token in the text area below') }}
+{% endif %}
+
+{% if validation_errors() is not empty %}
+<div class="alert alert-danger"> 
+    {{ validation_errors() }}
+</div>
+{% endif %}
+<textarea name='access_token' rows='3' cols='100' id="accessToken" class="form-control" placeholder='{{ l('ENTER_ACCESS_TOKEN_HERE') }}'></textarea>
+<input type='submit' class='btn btn-primary' name='submit' value='{{ l('SET_ACCESS_TOKEN') }}'>
+</form>
+{% endblock %}
+
+{% block javascripts_footer %}
+	{{ parent() }}
+	<script>
+	$( document ).ready(function() {
+		$('#accessTokenURL').bind('input propertychange', function() {
+			var at = $(this).val().match(/access_token=(.*)(?=&expires_in)/);
+			if(at){$("#accessToken").val(at[1]);}
+		});
+	});
+</script>
+{% endblock %}

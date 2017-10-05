@@ -1,0 +1,17 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+if ( ! function_exists('generate_css_file') )
+{
+        function generate_css_file($global_color,$link_color){
+            $css = "a{color: #".$link_color."}.navbar-collapse.collapse.in{background: #".$global_color." !important}.navbar-inverse .navbar-collapse,.navbar-inverse .navbar-form{border-color: #".$global_color." !important}nav.navbar{background-color: #".$global_color." !important;}.btn-primary,.pagination>.active>a,.pagination>.active>a:focus,.pagination>.active>a:hover,.pagination>.active>span,.pagination>.active>span:focus,.pagination>.active>span:hover{background-color: #".$global_color." !important;border-color: #".$global_color." !important;color:#fff!important}.btn-primary.active.focus,.btn-primary.active:focus,.btn-primary.active:hover,.btn-primary:active.focus,.btn-primary:active:focus,.btn-primary:active:hover,.btn-primary:hover,.open>.dropdown-toggle.btn-primary.focus,.open>.dropdown-toggle.btn-primary:focus,.open>.dropdown-toggle.btn-primary:hover{background-color: #".$global_color." !important;opacity: 0.8;}.tabs-left .nav-tabs .active>a,.tabs-left .nav-tabs .active>a:focus,.tabs-left .nav-tabs .active>a:hover{border-color:#ddd transparent #ddd  #".$global_color." !important;border-left-color: #".$global_color." !important}.UserProfil img{border:1px solid  #".$global_color." !important}.postTypeActive{border-bottom:3px solid  #".$global_color." !important}.row.scheduledpost{border-left:5px solid  #".$global_color." !important}.settings .settingsContent .nav-tabs .active>a,.settings .settingsContent .nav-tabs .active>a:focus,.settings .settingsContent .nav-tabs .active>a:hover{border-color:#ddd transparent #ddd  #".$global_color." !important;background: #".$global_color." !important;color:#fff!important}.settings .settingsContent .nav-tabs{border-bottom:2px solid  #".$global_color." !important}.panel-primary {border-color: #".$global_color." !important;}.form-recover .panel-heading,.logmod__tabs,.simform__actions .submit{background:#".$global_color."!important}.panel-primary>.panel-heading{border-color:#".$global_color."!important}.logmod__tabs li a { color: white !important }.logmod__tabs li.current a { color: #".$global_color." !important }@media(max-width:767px){.settings .nav-tabs .active>a,.settings .nav-tabs .active>a:focus,.settings .nav-tabs .active>a:hover,.settings .nav-tabs li.active>a,.settings .nav-tabs li>a:focus,.settings .nav-tabs li>a:hover{border-bottom:2px solid #".$global_color."!important}}.btn-danger,.btn-success{color:#fff!important}.autocomplete-suggestions .seeAllResults { background #".$global_color." } .autocomplete-suggestions .seeAllResults a { color: white !important }.badge {background-color: #".$global_color."}.badge-primary {background-color: #".$global_color."}.sidebar-menu.static::-webkit-scrollbar-thumb{background-color: #".$global_color." !important;}.checkbox-style + label {border-color: #".$global_color." !important;}.checkbox-style:checked + label:after {background-color: #".$global_color." !important;}";
+
+                $cssFile = fopen(FCPATH . 'theme/default/css/theme_color.css', 'a+');
+                flock($cssFile, LOCK_EX);
+                ftruncate($cssFile, 0);
+                fseek($cssFile, 0);
+                fwrite($cssFile, $css.PHP_EOL);
+                flock($cssFile, LOCK_UN);
+                fclose($cssFile);
+        }
+}
+

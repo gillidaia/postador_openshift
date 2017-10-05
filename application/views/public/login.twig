@@ -1,0 +1,143 @@
+{% extends "base_public.twig" %}
+
+{% block title %}
+	{{ l("Login") }}
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+<div class="logmod">
+<span class="logmod__logo">
+  {% if app_settings['site_logo_large'] is empty %}
+    <img src="{{ assets('theme/default/images/kp_logo_large.png') }}" alt="logo">
+  {% else %}
+    <img src="{{ app_settings['site_logo_large'] }}" alt="logo">
+  {% endif %}
+</span>
+<div class="logmod__wrapper">
+  <div class="logmod__container">
+    <ul class="logmod__tabs">
+      <li data-tabtar="lgm-1" class="current"><a href="#">{{ l("login") }}</a></li>
+			{% if app_settings.users_can_register != 0 %}
+          <li data-tabtar="lgm-2">
+          	<a href="{{ base_url('register') }}">
+          		{{ l("SIGNUP") }}
+          	</a>
+          </li>
+  		{% endif %}
+    </ul>
+    <div class="logmod__tab-wrapper">
+      <!-- Signin -->
+      <div class="logmod__tab lgm-1 show">
+        <div class="logmod__heading">
+          <span class="logmod__heading-subtitle">
+          	{{ l("ENTER_USERNAME_PASSWORD_TO_SIGN_IN") }}
+          </span>
+          {{ form_open() }}  
+          
+          {% if validation_errors() is not empty %}
+            <div class="alert alert-danger"> 
+                {{ validation_errors() }}
+            </div>
+          {% endif %}
+
+          {% include "blocks/flash_bag.twig" %}
+        </div> 
+        <div class="logmod__form">
+          <form accept-charset="utf-8" action="#" method="POST" class="simform signin">
+            <div class="sminputs">
+              <div class="input full">
+                <label class="string optional" for="username">
+                	{{ l("USERNAME") }}*
+                </label>
+                <input class="string optional" name="username" maxlength="255" id="username" placeholder="{{ l("USERNAME") }}" type="text" size="50" />
+              </div>
+            </div>
+            <div class="sminputs">
+              <div class="input full">
+                <label class="string optional" for="password">{{ l("PASSWORD") }}*</label>
+                <input class="string optional" maxlength="255" name="password" id="password"  placeholder="{{ l("PASSWORD") }}" type="password" size="50" />
+                <span class="hide-password"><i class='fa fa-eye'></i></span>
+              </div>
+            </div>
+            <div class="simform__actions">
+              <input type="submit" class="submit" name="signin" id="signinBtn" value="{{ l("SIGNIN") }}" />
+              <span class="simform__actions-sidetext">
+                <input type="checkbox" name="remember" id="remember" class="checkbox-style"/>&nbsp;
+                <label for="remember"></label>
+                <span class="checkboxText" >{{ l("REMEMBER_ME") }}</span>
+              </span>
+              <span class="simform__actions-sidetext">
+                <a class="special" role="link" href="{{ base_url('account_recovery') }}">
+                	{{ l("FORGOT_PASSWORD_USERNAME") }}
+                </a>
+              </span>
+            </div> 
+          </form>
+        </div> 
+      </div>
+    </div>
+  </div> 
+</div>
+{% endblock %}
+
+{% block javascripts_footer  %}
+  {{ parent() }}
+  <script type="text/javascript">
+  var LoginModalController = {
+    tabsElementName: ".logmod__tabs li",
+    tabElementName: ".logmod__tab",
+    inputElementsName: ".logmod__form .input",
+    hidePasswordName: ".hide-password",
+    
+    inputElements: null,
+    tabsElement: null,
+    tabElement: null,
+    hidePassword: null,
+    
+    activeTab: null,
+    tabSelection: 0, // 0 - first, 1 - second
+    
+    findElements: function () {
+        var base = this;
+        
+        base.tabsElement = $(base.tabsElementName);
+        base.tabElement = $(base.tabElementName);
+        base.inputElements = $(base.inputElementsName);
+        base.hidePassword = $(base.hidePasswordName);
+        
+        return base;
+    },
+    
+   
+    addClickEvents: function () {
+      var base = this;
+        
+        base.hidePassword.on("click", function (e) {
+            var $this = $(this),
+                $pwInput = $this.prev("input");
+            
+            if ($pwInput.attr("type") == "password") {
+                $pwInput.attr("type", "text");
+                $this.html("<i class='fa fa-eye-slash'></i>");
+            } else {
+                $pwInput.attr("type", "password");
+                $this.html("<i class='fa fa-eye'></i>");
+            }
+        });
+        base.inputElements.find("label").on("click", function (e) {
+           var $this = $(this),
+               $input = $this.next("input"); 
+            $input.focus();
+        });     
+        return base;
+    },
+   
+    initialize: function () {
+        var base = this;        
+        base.findElements().addClickEvents();
+    }
+};
+$(document).ready(function() {LoginModalController.initialize();});
+</script>
+{% endblock %}

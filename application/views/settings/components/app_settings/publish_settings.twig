@@ -1,0 +1,70 @@
+<div class="panel panel-default">
+<div class="panel-heading">
+  <h4 class="panel-title">
+    <a data-toggle="collapse" data-parent="#accordion" href="#publish_settings">
+    <i class="fa fa-fw fa-clipboard" aria-hidden="true"></i> 
+	<span>{{ l('Publish settings') }}</span></a>
+  </h4>
+</div>
+<div id="publish_settings" class="panel-collapse collapse">
+  <div class="panel-body">
+	<div class="input-group">
+		{% if input_post("minInterval") is not empty %}
+			{% set minInterval = input_post("minInterval") %}
+		{% else %}
+			{% set minInterval = app_settings["min_interval"] %}
+		{% endif %}
+		<label for="minInterval">{{ l('Minimum interval for immediate posting (in seconds)') }}</label>
+		<input type="number" name="minInterval" class="form-control" id="minInterval" placeholder="{{ l('Minimum interval for immediate posting (in seconds)') }}" value="{{ minInterval }}" />
+	</div>
+
+	<div class="input-group">
+		{% if input_post("minIntervalSchedule") is not empty %}
+			{% set minIntervalSchedule = input_post("minIntervalSchedule") %}
+		{% else %}
+			{% set minIntervalSchedule = app_settings["min_interval_schedule"] %}
+		{% endif %}
+		<label for="minIntervalSchedule">{{ l('Minimum interval on schedule post (in minutes)') }}</label>
+		<input type="number" name="min_interval_schedule" class="form-control" id="minIntervalSchedule" placeholder="{{ l('Minimum interval on schedule post (in minutes)') }}" value="{{ minIntervalSchedule }}" />
+	</div>
+
+	<div class="input-group">
+		{% if input_post("enable_instant_post") is not empty %}
+			{% set enable_instant_post = input_post("enable_instant_post") == 'on' ? "checked" : "" %}
+		{% else %}
+			{% set enable_instant_post = app_settings["enable_instant_post"] == 1 ? "checked" : "" %}
+		{% endif %}
+		<input type="checkbox" id="enable_instant_post" name="enable_instant_post"  class='checkbox-style' {{ enable_instant_post }}/>
+		<label for="enable_instant_post" ></label>
+		<label for="enable_instant_post" class="input-text">{{ l('Enable instant post') }}</label>
+	</div>
+
+
+	<div class="input-group">
+		{% if input_post("enable_sale_post_type") is not empty %}
+			{% set enable_sale_post_type = input_post("enable_sale_post_type") == 'on' ? "checked" : "" %}
+		{% else %}
+			{% set enable_sale_post_type = app_settings["enable_sale_post_type"] == 1 ? "checked" : "" %}
+		{% endif %}
+		<input type="checkbox" id="enable_sale_post_type" name="enable_sale_post_type"  class='checkbox-style' {{ enable_sale_post_type }}/>
+		<label for="enable_sale_post_type" ></label>
+		<label for="enable_sale_post_type" class="input-text">{{ l('Enable sale post type') }}</label>
+	</div>
+
+
+	<div class="input-group">
+		{% if input_post("enable_link_customize") is not empty %}
+			{% set enable_link_customize = input_post("enable_link_customize") == 'on' ? "checked" : "" %}
+		{% else %}
+			{% set enable_link_customize = app_settings["enable_link_customize"] == 1 ? "checked" : "" %}
+		{% endif %}
+		<input type="checkbox" id="enable_link_customize" name="enable_link_customize"  class='checkbox-style' {{ enable_link_customize }}/>
+		<label for="enable_link_customize" ></label>
+		<label for="enable_link_customize" class="input-text">{{ l('Enable link customization') }}</label>
+	</div>
+
+	<input type="submit" name="save" value="{{ l('SAVE_CHANGES') }}" class="btn btn-primary" />
+	
+	</div>
+</div>
+</div>

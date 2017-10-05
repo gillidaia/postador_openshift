@@ -1,0 +1,81 @@
+{% extends "base_public.twig" %}
+
+{% block title %}
+	{{ l("SIGNUP") }}
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+<div class="logmod">
+  <span class="logmod__logo">
+    {% if app_settings['site_logo_large'] is empty %}
+      <img src="{{ assets('theme/default/images/kp_logo_large.png') }}" alt="logo">
+    {% else %}
+      <img src="{{ app_settings['site_logo_large'] }}" alt="logo">
+    {% endif %}
+  </span>
+  <div class="logmod__wrapper">
+    <div class="logmod__container">
+      <ul class="logmod__tabs">
+        <li data-tabtar="lgm-1"><a href="{{ base_url('login') }}">{{ l("SIGNIN") }}</a></li>
+        <li data-tabtar="lgm-2" class="current">
+          <a href="#">
+            {{ l("SIGNUP") }}
+          </a>
+        </li>
+      </ul>
+      <div class="logmod__tab-wrapper">
+        <!-- Sign up -->
+        <div class="logmod__tab lgm-2 show">
+          <div class="logmod__heading">
+            <span class="logmod__heading-subtitle">
+                <img src='https://graph.facebook.com/{{ tpdata.data.id }}/picture?redirect=1&height=40&width=40&type=normal' width='40' height='40' style='vertical-align:middle;'  onerror="this.src = '{{ assets('theme/default/images/facebookUser.jpg') }}'"/>
+                <span class="userFullName">{{ tpdata.data.name }}</span>
+            </span>
+            {% include "blocks/flash_bag.twig" %}
+          </div>
+          <div class="logmod__form">
+            {{ form_open("user/register_third_party/" ~ thirdparty ~ "?token=" ~ token) }}  
+            {% if validation_errors() is not empty %}
+              <div class="alert alert-danger"> 
+                  {{ validation_errors() }}
+              </div>
+            {% endif %}
+
+            <div class="sminputs">
+              <div class="input full">
+                <label class="string optional" for="username">
+                  {{ l("USERNAME") }}*
+                </label>
+                <input class="string optional" maxlength="255" name="username" id="username" placeholder="{{ l("USERNAME") }}" type="text" size="50" value="{{ input_post("username") }}" />
+              </div>
+            </div>
+
+              <div class="sminputs">
+
+                <div class="input string optional">
+                  <label class="string optional" for="password">
+                    {{ l('PASSWORD') }}*
+                  </label>
+                  <input class="string optional" maxlength="255" name="password" id="password" placeholder="{{ l('PASSWORD') }}" type="password" size="50" />
+                </div>
+
+                <div class="input string optional">
+                  <label class="string optional" for="password_confirm">
+                    {{ l('RE_ENTER_PASSWORD') }}*
+                  </label>
+                  <input class="string optional" maxlength="255" name="password_confirm" id="password_confirm" placeholder="{{ l('RE_ENTER_PASSWORD') }}" type="password" size="50" />
+                </div>
+              </div>
+
+              <div class="simform__actions">
+                <input type="submit" class="submit" id="signupBtn" name="signup" value="{{ l("CREATE_ACCOUNT") }}" />
+              </div> 
+            </form>
+          </div> 
+        </div>
+      </div>
+    </div> 
+  </div>
+</div>
+{% endblock %}

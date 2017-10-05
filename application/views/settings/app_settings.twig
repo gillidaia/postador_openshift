@@ -1,0 +1,82 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l('App settings') }}
+{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+{% if validation_errors() is not empty %}
+<div class="alert alert-danger"> 
+    {{ validation_errors() }}
+</div>
+{% endif %}
+{{ form_open() }}
+<div class="settings">
+	<div class="row">
+		<div class="tabbable tabs-left">
+			<div class="col-xs-12 col-sm-3 settingsTabs">
+				{% set current_page = 'app_settings' %}
+				{% include "settings/tabs.twig" %}
+			</div>
+			<div class="col-xs-12 col-sm-9 settingsContent">
+				<div class="tab-content panel-group">
+					<h4 class="tab-title"><i class="fa fa-cogs"></i> {{ l('App settings') }}</h4>
+					<div class="panel-group" id="accordion">
+						{% include 'settings/components/app_settings/general.twig' %}
+						{% include 'settings/components/app_settings/publish_settings.twig' %}
+						{% include 'settings/components/app_settings/theme_settings.twig' %}
+						{% include 'settings/components/app_settings/social_login.twig' %}
+						{% include 'settings/components/app_settings/advanced_settings.twig' %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</form>
+
+{# Box variables #}
+{% set box_id = "fbapp" %}
+{% set delete_msg = l("Are you sure you want to delete the app?") %}
+{% include "blocks/delete_modal.twig" %}
+
+{% endblock %}
+
+
+{% block javascripts_footer %}
+	{{ parent() }}
+	<script src="{{ assets('theme/default/js/helpers.js') }}"></script>
+	<script src="{{ assets('theme/default/js/libs/jscolor.min.js') }}"></script>
+
+	<script>
+	    // Delete a user
+		$( "#clearCache" ).click(function(){
+		  	if(confirm("{{ l('Are you sure you want to clear the cache?')}}")){
+		  		$(".clearCacheIcon").show();
+			    $.ajax({
+				    url: '{{ base_url("settings/app_settings/clear_cache") }}',
+				    dataType: 'json',
+				    type: 'post',
+				    contentType: 'application/x-www-form-urlencoded',
+				    data: {
+				    	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+				    },
+				    success: function( data, textStatus, jQxhr ){
+				        if(data.status == "success"){
+				         	alertBox("{{ l('Cache has been cleared!') }}","success",".clearMessage",true,true);
+				        }
+				        	
+				        $(".clearCacheIcon").hide();
+				        
+				    },
+				    error: function( jqXhr, textStatus, errorThrown ){ 
+				        $(".clearCacheIcon").hide();
+				        console.log(errorThrown);
+				    }
+			  	});
+			}
+		});
+	</script>
+
+{% endblock %}

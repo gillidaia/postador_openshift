@@ -1,0 +1,262 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l('Facebook Apps') }}
+{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+<form method='POST' class="settings" novalidate>
+	<div class="row">
+		<div class="tabbable tabs-left">
+			<div class="col-xs-12 col-sm-3 settingsTabs">
+				{% set current_page = 'fbapps' %}
+				{% include "settings/tabs.twig" %}
+			</div>
+			<div class="col-xs-12 col-sm-9 settingsContent">
+				<div class="tab-content">
+
+					{{ form_open() }}
+
+					<h4 class="tab-title"><i class="fa fa-plug"></i> {{ l('FB_APPS') }}</h4>
+					<div class="manageAppErrors"></div>
+					
+					<div class="input-group">
+						<label for="fbapp_id">{{ l('FB_APP_ID') }}</label>
+						<input type="text" name="fbapp_id" class="form-control" id="fbapp_id" placeholder="{{ lang('FB_APP_ID') }}" value="" />
+					</div>
+					
+					<div class="input-group">
+						<label for="fbapp_secret">{{ l('FB_APP_SECRET') }}</label>
+						<input type="text" name="fbapp_secret" class="form-control" id="fbapp_secret" placeholder="{{ l('FB_APP_SECRET') }}" value=""/>
+					</div>
+					
+					<div class="input-group">
+					<label for="fbapp_auth_Link">{{ l('FB_APP_AUTH_LINK') }}
+						&nbsp;<a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" style="float:right" title="{{ l('FB_APP_AUTH_LINK_NOTE') }}"> 
+						<i class="fa fa-question-circle" aria-hidden="true"></i></a>
+						</label>
+						<input type="text" name="fbapp_auth_Link" class="form-control" id="fbapp_auth_Link" placeholder="{{ l('FB_APP_AUTH_LINK') }}" value=""/>
+					</div>
+
+					{% if user.hasPermission('admin') == true %}
+						<div class="input-group">
+							<input type="checkbox" class='checkbox-style is_public' id="is_public" name="is_public" aria-label="{{ l('Make this app public') }}"  />
+							<label for="is_public"></label> {{ l('Make this app public') }}
+						</div>
+					{% endif %}
+
+					<div class="input-group">
+						<input type="button" name="addFbApp" value="{{ l('Add') }}" id="addFbApp" class="btn btn-primary" />
+					</div>
+				
+					{% if fbaccountDetails.row('name') is not empty %} 
+						<div class='alert alert-warning' role='alert'>
+						<span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>
+						{{ l("Please make sure to logged in to Facebook as %s before authenticate the app.","<strong class='text-danger'>" ~ fbaccountDetails.row('name') ~ "</strong>"|capitalize)|raw }}
+            			</div>
+					{% endif %}
+				
+				
+				<br />
+
+				<div class="has-responsive-table">
+					<table class='table table-bordered table-striped'>
+						<thead>
+							<tr>
+								<td>{{ l('APP_NAME') }}</td>
+								<td>{{ l('Expires on') }}</td>
+								<td></td>
+							</tr>
+						</thead>
+						<tbody id="fbapps">
+							
+							{% for fbapp in fbapps.getUserFBApps() %}
+
+								{% if fb.GetAccessToken(fbapp.id) is not empty %}
+									{% set statusIcon = "ok" %}
+								{% else %}
+									{% set statusIcon = "remove" %}
+								{% endif %}
+
+								{% set appType = fbapps.appType(fbapp.id) %}
+
+								{% set userApp = fbapps.getAccessToken(fbapp.id,fbaccountDetails.row('fb_id'),user.currentUser()['user_id']) %}
+
+								<tr>
+									<td>
+										<img src='https://graph.facebook.com/{{ fbapp.appid }}/picture?redirect=1&height=32&width=32&type=small' width='32' height='32' style='vertical-align:middle;'  onerror="this.src = '{{ assets('theme/default/images/facebookApp.png') }}'"/>
+										{{ fbapp.app_name }}
+									</td>
+									<td>
+										{% if userApp.row() %}
+											{% if userApp.row('expires_in') == "never" or userApp.row('expires_in') starts with '-' %}
+												{{ l('Never') }}
+											{% else %}
+												{% if userApp.row('expires_in') matches '/[0-9]+/' %}
+												  {{ userApp.row('access_token_date')|date_modify("+" ~ userApp.row('expires_in')|abs ~ " seconds")|date(date_format ~ " H:i") }}
+												{% else %}
+												  -
+												{% endif %}
+											{% endif %}
+										{% else %}
+											-
+										{% endif %}
+									</td>
+									<td>
+									{% if fbapp.user_id == user.currentUser()['user_id'] %}
+										<button type="button" value='{{ fbapp.id }}' title='{{ l('DELETE') }}' class='btn btn-danger deleteFbAppBtn'>
+											<span class='glyphicon glyphicon-trash'></span> 
+											<span class="hidden-xs">{{ l('DELETE') }}</span>
+										</button>
+									{% endif %}
+
+									{% if userApp.row() %}
+										<a href='{{ base_url('settings/fbapps/deauthenticate/' ~ fbapp.id) }}' title='{{ l('DEAUTHENTICATE') }}' class='btn btn-danger'><span class='glyphicon glyphicon-remove'></span> 
+											<span class="hidden-xs">{{ l('DEAUTHENTICATE') }}</span></a>
+									{% else %}
+
+										{% if appType == 3 or appType == 2%}
+											<button type="button" onclick="window.open('{{ base_url('Facebook/app_authentication/third_party/?app_id=' ~ fbapp.id) }}','','height=400,width=600'); return false;" class='btn btn-primary'>
+												<i class="fa fa-cog" aria-hidden="true"></i>
+												<span class="hidden-xs">{{ l('AUTHENTICATE') }}</span></button>
+										{% endif %}
+
+										{% if appType == 1 %}
+											<button type="button" onclick="window.open('{{ base_url('Facebook/app_authentication/own_app/?app_id=' ~ fbapp.id) }}','','height=450,width=600'); return false;" class='btn btn-primary'>
+												<i class="fa fa-cog" aria-hidden="true"></i>
+												<span class="hidden-xs">{{ l('AUTHENTICATE') }}</span></button>
+										{% endif %}
+
+									{% endif %}
+								</td>
+							</tr>
+							{% else %}
+								<tr>
+									<td colspan="2">{{ l('No apps Available ') }}</td>
+								</tr>
+							{% endfor %}
+							
+						</tbody>
+					</table>
+				</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+
+{# Box variables #}
+{% set box_id = "fbapp" %}
+{% set delete_msg = l("Are you sure you want to delete the app?") %}
+{% include "blocks/delete_modal.twig" %}
+
+{% endblock %}
+
+
+{% block javascripts_footer %}
+	{{ parent() }}
+	<script src="{{ assets('theme/default/js/helpers.js') }}"></script>
+
+	<script>
+		function FbAuth(app_id){
+			window.open('{{ base_url("Facebook/app_authentication") }}?app_id='+app_id,'','height=500,width=600');
+		}
+
+		$( document ).ready(function() {
+			$("#addFbApp").click(function(){
+				// app_id and app_serect validation
+				$('.manageAppErrors').html('');
+
+				if($("#fbapp_id").val() == ""){	
+					alertBox("{{ l('APP_ID_CAN_NOT_EMPTY') }}",'danger',".manageAppErrors");
+				} else {
+					kp_preloader("on");
+					$.ajax({
+				      url: '{{ base_url("settings/fbapps/add_fbapp") }}',
+				      dataType: 'json',
+				      type: 'post',
+				      contentType: 'application/x-www-form-urlencoded',
+				      data: { 
+				      	app_id:$("#fbapp_id").val(),
+				      	app_secret:$("#fbapp_secret").val(),
+				      	fbapp_auth_Link:$("#fbapp_auth_Link").val(),
+
+				      	{# Send is_public field if the current user is admin #}
+				      	{% if user.hasPermission('admin') == true %}
+				      		is_public: $('#is_public').is(":checked") ? 1 : 0,
+				      	{% endif %}
+
+				      	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+				      },
+				      success: function( data, textStatus, jQxhr ){
+				        if(data.status == "success"){
+				        	location.reload();
+				        }else{
+							if(data.message !== null && typeof data.message === 'object'){
+								htmlData = "<ul>";
+								Object.keys(data.message).forEach(function(key) {
+								    htmlData += "<li>" + data.message[key] + "</li>";
+								});
+								htmlData += "</ul>";
+							}else{
+								htmlData = data.message;
+			                }
+				        	alertBox(htmlData,'danger',".manageAppErrors");
+				        }
+				      },
+				      error: function( jqXhr, textStatus, errorThrown ){ 
+				      	console.log(errorThrown);
+				      	alertBox("{{ l('Unable to complete your request') }}","danger",".manageAppErrors",false,false);
+				      },
+				      complete: function () {
+				      	kp_preloader("off");
+				      }
+				    });
+				}
+			});
+		});
+
+		{# Delete action #}
+	    $(".deleteFbAppBtn").click(function(){
+			$("#delete_fbapp").modal("show");
+			deleteFbappBtn = $(this);
+	    });
+
+	    $(".deleteBtn_fbapp" ).click(function(){
+	    	
+		    $.ajax({
+		      url: '{{ base_url("settings/fbapps/delete_fbapp") }}',
+		      dataType: 'json',
+		      type: 'post',
+		      contentType: 'application/x-www-form-urlencoded',
+		      data: { 
+		      	id: deleteFbappBtn.val(),
+		      	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+		      },
+		      success: function( data, textStatus, jQxhr ){
+		        if(data.status == "success"){
+		        	alertBox(data.message,"success",".deleteAlertBox_fbapp",false,false);
+	            	$(".deleteBtn_fbapp").prop('disabled', true);
+		        	$(document).on('hide.bs.modal','#delete_fbapp', function () {
+		        		location.reload();
+		        	});
+		        }else{
+		        	alertBox(data.message,"danger",".deleteAlertBox_fbapp",false,false);
+		        }
+		      },
+		      error: function( jqXhr, textStatus, errorThrown ){ 
+		      	console.log(errorThrown);
+		      	alertBox("{{ l('Unable to complete your request') }}","danger",".deleteAlertBox_fbapp",false,false);
+		      }
+		    });
+
+		    $('.deleteBox_content_fbapp').html("");
+	      
+		});
+
+
+	</script>
+
+{% endblock %}

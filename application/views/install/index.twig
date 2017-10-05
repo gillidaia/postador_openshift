@@ -1,0 +1,32 @@
+{% extends "install/base.twig" %}
+
+{% set page = 'Install' %}
+
+{% block title %}
+  Kingposter Installation
+{% endblock %}
+
+
+{% block mainContent %}
+		<div class="panel pv panel-default">
+      <div class="panel-heading">
+      	<h4>Database type</h4>
+      </div>
+      <div class="panel-body">
+        {% if validation_errors() is not empty %}
+          <div class="alert alert-danger">
+                {{ validation_errors() }}
+            </div>
+        {% endif %} 
+        {% include "blocks/flash_bag.twig" %}
+        {{ form_open()}}
+      	<select class="form-control" name="db_driver">
+          <option value="sqlite">SQLITE</option>
+          <option value="mysql">MYSQL</option>
+        </select>
+        <br />
+      	<input type="submit" name="contenue" value="Contenue" class="btn btn-primary m-t-1 w-100 pull-right">
+        </form>
+      </div>
+  	</div>
+{% endblock %}

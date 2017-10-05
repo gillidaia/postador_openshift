@@ -1,0 +1,83 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l('Publish settings') }}
+{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+<form method='POST' class="settings" novalidate>
+	<div class="row">
+		<div class="tabbable tabs-left">
+			<div class="col-xs-12 col-sm-3 settingsTabs">
+				{% set current_page = 'publish_settings' %}
+				{% include "settings/tabs.twig" %}
+			</div>
+			<div class="col-xs-12 col-sm-9 settingsContent">
+				<div class="tab-content">
+
+					{{ form_open() }}
+
+					<h4 class="tab-title"><i class="fa fa-clipboard"></i> {{ l('Publish settings') }}</h4>
+					
+					<div class="input-group">
+						{% if input_post("openGroupOnly") is not empty %}
+							{% set openGroupOnlyChecked = input_post("openGroupOnly") == 'on' ? "checked" : "" %}
+						{% else %}
+							{% set openGroupOnlyChecked = userOptions.row('openGroupOnly') == 1 ? "checked" : "" %}
+						{% endif %}
+						<input type="checkbox" class="checkbox-style" id="openGroupOnly" name="openGroupOnly" aria-label="Post to open group only" {{ openGroupOnlyChecked }} />
+						<label for="openGroupOnly"></label>
+						<span class="input-text">{{ l('SHOW_OPEN_GROUPS_ONLY') }}</span>
+					</div>
+					<div class="input-group">
+						{% if input_post("uniquePost") is not empty %}
+							{% set uniquePost = input_post("uniquePost") == 'on' ? "checked" : "" %}
+						{% else %}
+							{% set uniquePost = userOptions.row('uniquePost') == 1 ? "checked" : "" %}
+						{% endif %}
+
+						<input type="checkbox" class="checkbox-style" id="uniquePost" name="uniquePost" aria-label="Unique post" {{ uniquePost }} />
+						<label for="uniquePost"></label>
+
+						<span class="input-text">{{ l('UNIQUE_POST') }} <a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" title="{{ l('UNIQUE_POST_TEXT') }}"><i class="fa fa-question-circle" aria-hidden="true"></i></a> </span>
+					</div>
+					<div class="input-group">
+						{% if input_post("uniqueLink") is not empty %}
+							{% set uniqueLink = input_post("uniqueLink") == 'on' ? "checked" : "" %}
+						{% else %}
+							{% set uniqueLink = userOptions.row('uniqueLink') == 1 ? "checked" : "" %}
+						{% endif %}
+						<input type="checkbox" class="checkbox-style" id="uniqueLink" name="uniqueLink" aria-label="Unique post" {{ uniqueLink }} />
+						<label for="uniqueLink"></label>
+						<span class="input-text">{{ l('UNIQUE_LINK') }} <a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" title="{{ l('UNIQUE_LINK_TEXT') }}"><i class="fa fa-question-circle" aria-hidden="true"></i></a></span>
+					</div>
+					<label for="postInterval">{{ l('POST_INTERVAL') }} (<small>{{ l('IN_SECONDS') }}</small>)</label>
+					<select name='postInterval' id="postInterval"  class="form-control">
+						{% set minInterval = app_settings.min_interval < 10 ? 10 : app_settings.min_interval %}
+						{% for i in minInterval ..1500 %}
+							{% set currentUserInterval = userOptions.row('postInterval') is not empty ? userOptions.row('postInterval') : minInterval %}
+							{% if currentUserInterval == i %}
+								<option value='{{ i }}' selected=="selected">{{ i }} {{ l('Sec') }}</option>
+							{% else %}
+								<option value='{{ i }}'>{{ i }} {{ l('Sec') }}</option>
+							{% endif %}
+						{% endfor %}
+					</select>
+					<label for="postApp">{{ l('FB_APP') }}</label>
+					<select name='postApp' id="postApp" class="form-control">
+						<option value=""></option>
+						{% set selected = input_post('scheduledPostApp') ? input_post('scheduledPostApp') : fbAccountDefaultApp.row('id') %}
+						{% for app in fbAccountApps %}
+							{% set s = selected == app.appid ? "selected" : "" %}
+							<option value='{{ app.appid }}' {{ s }}>{{ app.app_name }}</option>
+						{% endfor %}
+					</select>
+					
+					<input type="submit" name="save" value="{{ l('SAVE_CHANGES') }}" class="btn btn-primary" />
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+{% endblock %}

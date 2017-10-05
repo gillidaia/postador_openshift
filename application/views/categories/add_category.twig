@@ -1,0 +1,77 @@
+<div id="addNewCatModal" class="modal fade" role="dialog" data-backdrop="static">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">{{ l("Create new category") }}</h4>
+			</div>
+			<div class="modal-body">
+				<div class="addNewCatModalMsgBox"></div>
+		  		<input type="text" id="newCategoryName" name="newCategoryName" class="form-control" placeholder="{{ l('New category name') }}"/>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-default" data-dismiss="modal">{{ l("CLOSE") }}</button>
+				<button id="addCategory" onclick="return false;" class="btn btn-primary f">{{ l("Create") }}</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	$(function(){
+
+		$('.groupsOptions').on('click','#createNewCatBtn', function(e) {
+			$("#addNewCatModal").modal("show");
+		});
+
+		$('#addNewCatModal').on('click','#addCategory', function(e) {
+			$("#addCategory").prop('disabled', true);
+			kp_preloader("on","#addNewCatModal .modal-body");
+			$.ajax({
+		      url: '{{ base_url("nodes_categories/add_category") }}',
+		      dataType: 'json',
+		      type: 'post',
+		      contentType: 'application/x-www-form-urlencoded',
+		      data: { 
+		      	categoryname: $("#newCategoryName").val(),
+				{{ config_item('csrf_token_name') }} : getCookie("{{ config_item('csrf_cookie_name') }}"),
+		      },
+		      success: function( data, textStatus, jQxhr ){
+		      	if(data.status == "success"){
+                  if(data.message !== null && typeof data.message === 'object'){
+                    htmlData = "<ul>";
+                    Object.keys(data.message).forEach(function(key) {
+                        htmlData += "<li>" + data.message[key] + "</li>";
+                    });
+                    htmlData += "</ul>";
+                  }else{
+                    htmlData = data.message;
+                  }
+                  alertBox(htmlData,"success",".addNewCatModalMsgBox",true,true);
+                }else{
+                  if(data.message !== null && typeof data.message === 'object'){
+                    htmlData = "<ul>";
+                    Object.keys(data.message).forEach(function(key) {
+                        htmlData += "<li>" + data.message[key] + "</li>";
+                    });
+                    htmlData += "</ul>";
+                  }else{
+                    htmlData = data.message;
+                  }
+                  alertBox(htmlData,"danger",".addNewCatModalMsgBox",false,true);
+                }
+
+		        $("#addCategory").prop('disabled', false);
+		        	
+		      },
+		      error: function( jqXhr, textStatus, errorThrown ){ 
+		      	console.log(errorThrown);
+		      	alertBox("{{ l('Unable to complete your request, Please try again') }}","danger",".addNewCatModalMsgBox",false,true);
+		      	$("#addCategory").prop('disabled', false);
+		      },
+		      complete: function(){
+		      	kp_preloader("off","#addNewCatModal .modal-body");
+		      }
+		    });
+		});	
+	});	
+</script>

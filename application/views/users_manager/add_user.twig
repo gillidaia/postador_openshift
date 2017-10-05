@@ -1,0 +1,75 @@
+<!-- Add new user -->
+<div class="modal fade" id="addNewUser" tabindex="-1"  data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="newUserLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="newUserLabel">{{ l('NEW_USER') }}</h4>
+      </div>
+    	<div class="modal-body">
+        	<div class="addNewUserAlertBox"></div>
+
+         	<div class="row">
+	            <div class="col-sm-6">
+		            <div class="input-group">
+		            	<label for="username" class="sr-only">{{ l('Username') }}</label>
+		            	<input type="text" name="username" id="username" class="form-control" placeholder="{{ l('Username') }}" required autofocus="off" value=""/>
+	            	</div>
+	            </div>
+
+	            <div class="col-sm-6">
+	            	<div class="input-group">
+	              		<label for="email" class="sr-only">{{ l('EMAIL') }}</label>
+	              		<input type="text" name="email" id="email" class="form-control" placeholder="{{ l('EMAIL') }}" required autofocus="off" value=""/>
+	          		</div>
+	            </div>
+        	</div>
+
+          	<div class="row">
+			    <div class="col-sm-6">
+			    	<div class="input-group">
+			      		<label for="password"  class="sr-only">{{ l('Password') }}</label>
+			      		<input type="password" id="password" name="password" class="form-control" placeholder="{{ l('Password') }}" required />
+			  		</div>
+			    </div>
+
+			    <div class="col-sm-6">
+			    	<div class="input-group">
+			      		<label for="re_password"  class="sr-only">{{ l('RE_ENTER_PASSWORD') }}</label>
+			      		<input type="password" name="re_password" id="re_password" placeholder="{{ l('RE_ENTER_PASSWORD') }}" class="form-control" required />
+			  		</div>
+			    </div>
+			</div>
+
+			<div class="row">
+			    <div class="col-sm-6">
+			    	<div class="input-group">
+			      		<label for="role" class="sr-only">{{ l('ROLES') }}</label>
+						<select name="role" id="role" class="form-control">
+							<option value="">-- {{ l('Choose the user role') }} --</option>
+							{% for role in roles %}
+							   <option value="{{ role.id }}">{{ l(role.name)|capitalize }}</option>
+							{% endfor %}
+						</select>
+			  		</div>
+			    </div>
+			    <div class="col-sm-6">
+			    	<label for="expire_on"  class="sr-only">{{ l('Expire on') }}</label>
+			    	<div class='input-group date'>
+			    		<input type='text' class="form-control expire_on" id='expire_on' placeholder="{{ l('Expire on') }}"/>
+			    		<span class="input-group-addon">
+			    			<span class="fa fa-calendar"></span>
+			    		</span>
+			    	</div>
+			    </div>
+			</div>
+			
+      </div>
+      <div class="modal-footer">
+          <button type="button" id="addUserClose" class="btn btn-default" data-dismiss="modal">{{ l('Close')}}</button>
+          <button type="button" id="newUserBtn" class="btn btn-primary">{{ l('ADD') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Add new user End -->

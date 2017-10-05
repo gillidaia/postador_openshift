@@ -1,0 +1,137 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}{{ l('Posts') }}{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+{% include "blocks/flash_bag.twig" %}
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">
+			<i class="fa fa-clipboard" aria-hidden="true"></i>
+			{{ l("POSTS") }}
+			<span class="TotalRecords">{{ l('Showing %s of %s ',perPage,total_posts) }}</span>
+		</h3>
+	</div>
+	<div class="panel-body">
+		<form method="POST">
+
+		<button class="btn btn-danger" type="button" id="deleteBtn">
+			<i class="fa fa-trash fa-fw" aria-hidden="true"></i>
+			{{ l('Delete') }}
+		</button>
+
+		<a href="{{ base_url() }}" class="btn btn-primary">{{ l('New post') }}</a>
+
+		<table class="table table-bordered table-striped dataTable" id="datatable" width="100%">
+			<thead>
+				<tr>
+					<td width="20px">
+						<input type='checkbox' id="checkbox-all" class="check-all checkbox-style" name='a' />
+						<label for="checkbox-all"></label>
+					</td>
+					<td>{{ l('POST_TITLE') }}</td>
+					<td>{{ l('POST_TYPE') }}</td>
+					<td  class="hidden-sm hidden-xs">{{ l('DATE_CREATED') }}</td>
+					<td></td>
+				</tr>
+			</thead>
+				{% if posts is not empty %}
+					{% set postIcons = {
+						'message': 'align-left',
+						'link':  'link',
+						'image':  'image',
+						'video':  'video-camera'
+					} %}
+					{% for post in posts %}
+						<tr>
+							<td>
+								<input type='checkbox' class='checkbox checkbox-style' name='checkbox[]' id='checkbox-{{ post.id }}' value='{{ post.id }}' />
+								<label for='checkbox-{{ post.id }}'></label>
+							</td>
+							<td>{{ post.post_title|capitalize }}</td>
+							<td>
+								<h4>
+									<span class='label label-default'>
+										<i class="fa fa-{{ postIcons[post.type] }}" aria-hidden="true"></i>
+										<span class="hidden-xs">{{ l(post.type)|capitalize }}</span>
+									</span>
+								</h4>
+							</td>
+							<td class="hidden-sm hidden-xs">{{ post.date_created|date(date_format ~ ' H:i') }}</td>
+							<td>
+							<a href="{{ base_url('?post_id=' ~ post.id) }}" title=" {{ l('POST') }}" class='btn btn-primary' id="{{ post.id }}">
+								<span class='glyphicon glyphicon-pencil'></span> 
+								<span class="hidden-xs">{{ l('POST') }}</span>
+							</a>
+							</td>
+						</tr>
+					{% endfor %}
+				{% else %}
+					<td colspan="5">{{ l('No records') }}</td>
+					</tr>
+				{% endif %}
+		</table>
+		{% if pagination %}
+	      {{ pagination|raw}}
+	    {% endif %}
+		</form>
+	</div>
+</div>
+
+{# Box variables #}
+{% set box_id = "post" %}
+{% set delete_msg = l("Are you sure you want to delete the selected records?") %}
+{% include "blocks/delete_modal.twig" %}
+
+{% endblock %}
+
+{% block javascripts_footer %}
+    {{ parent() }}
+   	<script src="{{ assets('theme/default/js/helpers.js') }}"></script>
+    <script>
+    {# Delete action #}
+    $("#deleteBtn").click(function(){
+    	if($('tbody .checkbox:checked').length > 0){
+			$("#delete_post").modal("show");
+    	}
+    });
+
+	$(".deleteBtn_post" ).click(function(){
+  		var posts = [];
+  		$('tbody .checkbox:checked').each(function(){
+    		posts.push($(this).val());
+  		});
+
+  		kp_preloader("on","#delete_post .modal-body");
+		$(".deleteBtn_post").prop('disabled', true);
+
+		$.ajax({
+			url: '{{ base_url("posts/delete") }}',
+			dataType: 'json',
+			type: 'post',
+			contentType: 'application/x-www-form-urlencoded',
+			data: { ids: JSON.stringify(posts), {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') },
+			success: function( data, textStatus, jQxhr ){
+			  if(data.status == "success"){
+			    alertBox(data.message,"success",".deleteAlertBox_post",false,false);
+			      $(".deleteBtn_post").prop('disabled', true);
+			    $(document).on('hide.bs.modal','#delete_post', function () {location.reload();});
+			  }else{
+			    alertBox(data.message,"danger",".deleteAlertBox_post",false,false);
+			  }
+			},
+			error: function( jqXhr, textStatus, errorThrown ){ 
+			  console.log(errorThrown);
+			  alertBox("{{ l('Unable to complete your request') }}","danger",".deleteAlertBox_post",false,false);
+			},
+			complete: function(){
+				kp_preloader("off","#delete_post .modal-body");
+				$(".deleteBtn_post").prop('disabled', false);
+			}
+		});
+
+		$('.deleteBox_content_post').html("");
+   	});
+    </script>
+{% endblock %}

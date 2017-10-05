@@ -1,0 +1,307 @@
+{% if post %}
+	{% set p = json_decode(post.row('content')) %}
+
+	{{ set_input_post('postTitle',post.row('post_title')) }}
+	{{ set_input_post('postId',post.row('id')) }}
+	
+	{{ set_input_post('message',p.message) }}
+	{{ set_input_post('itemname',p.itemname) }}
+	{{ set_input_post('itemprice',p.itemprice) }}
+	{{ set_input_post('postType','message') }}
+	
+	{# Set Post type #}
+	{% if post.row('type') == "link" %}
+		{{ set_input_post('postType','link') }}
+		{{ set_input_post('link',p.link) }}
+		{{ set_input_post('picture',p.picture) }}
+		{{ set_input_post('name',p.name) }}
+		{{ set_input_post('caption',p.caption) }}
+		{{ set_input_post('description',p.description) }}
+	{% endif %}
+
+	{# Set Post type #}
+	{% if post.row('type') == "image" %}
+		{{ set_input_post('postType','image') }}
+	{% endif %}
+
+	{# Set Post type #}
+	{% if post.row('type') == "video" %}
+		{{ set_input_post('postType','video') }}
+		{{ set_input_post('video',p.video) }}
+		{{ set_input_post('descriptionVideo',p.description_video) }}
+	{% endif %}
+{% else %}
+	{{ set_input_post('postType','message') }}
+{% endif %}
+
+<div class="panel panel-default pfPanel">
+	<div class="panel-heading">
+		<ul class="postType">
+
+			<li>
+			<a href="#" onclick="return false;" class="postTypeMessage {% if input_post("postType") == "message" %}postTypeActive{% endif %}"><i class="fa fa-align-left" aria-hidden="true"></i>
+				<span class="hidden-xs hidden-sm hidden-md">{{ l("Status") }}</span>
+			</a>
+			</li>
+
+			<li>
+			<a href="#" onclick="return false;"  class="postTypeLink {% if input_post("postType") == "link" %}postTypeActive{% endif %}">
+				<i class="fa fa-link" aria-hidden="true"></i>
+				<span class="hidden-xs hidden-sm hidden-md">{{ l("LINK") }}</span>
+			</a>
+			</li>
+
+			<li>
+			<a href="#" onclick="return false;"  class="postTypeImage {% if input_post('postType') == 'image' %} postTypeActive{% endif %}">
+				<i class="fa fa-picture-o" aria-hidden="true"></i>
+				<span class="hidden-xs hidden-sm hidden-md">{{ l("IMAGE") }}</span>
+			</a>
+			</li>
+
+			<li>
+			<a href="#" onclick="return false;"  class="postTypeVideo {% if input_post('postType') == 'video' %} postTypeActive{% endif %}">
+				<i class="fa fa-video-camera" aria-hidden="true"></i>
+				<span class="hidden-xs hidden-sm hidden-md">{{ l("VIDEO") }}</span>
+			</a>
+			</li>
+
+		</ul>
+	<div class="clear"></div>
+</div>
+<div class="panel-body">
+	<input type="hidden" name="postType" id="postType" value="{{ input_post("postType") }}" />
+	<input type="hidden" name="postId" id="postId" value="{{ input_post("postId") }}" />
+	<input type="hidden" name="URLFrom" id="URLFrom" value="" />
+	<div class="formField">
+		<label for="message">{{ l("Message") }} <a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" style="float:right" title="{{ l("Spinning example : {Hello|Howdy|Hola} to you, {Mr.|Mrs.|Ms.} {foo|bar|foobar}!!") }}"><i class="fa fa-question-circle" aria-hidden="true"></i></a></label>
+		<textarea name='message' id="message" rows='5' cols='50' class="form-control" placeholder='{{ l("Your status here...") }}'>{{ strip_tags(input_post("message", FALSE)) }}</textarea>
+		{% if app_settings.enable_sale_post_type == 1 %}
+
+		{% set link_style = "none" %}
+		{% if input_post("itemprice") is not empty %}
+			{% set link_style = "block" %}
+		{% endif %}
+
+		<div class="itemPriceFieldsToggle" style="overflow:auto">
+			<button type="button" class="btn btn-default pull-right">Add product price</button>
+		</div>
+
+		<div class="ItemDetails" style="display:{{ link_style }}">
+			<div class="formField">
+				<label for="itemname">{{ l("Product name") }} <small>({{ l("Product name must be in English") }})</small> <a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" style="float:right" title="{{ l("Example: T-shirt, headset, smartphone") }}"><i class="fa fa-question-circle" aria-hidden="true"></i></a></label>
+				<input type='text' id="itemname" name='itemname' class="form-control" value="{{ input_post("itemname") }}" placeholder='{{ l("Product title here.") }}'>
+			</div>
+			<div class="formField">
+				<label for="itemprice">{{ l("Product price") }}</label>
+				<input type='text' name='itemprice' id="itemprice" class="form-control" value="{{ input_post("itemprice") }}" placeholder='{{ l("Product price here.") }}' />
+			</div>
+		</div>
+		{% endif %}
+	</div>
+
+	<div id="postLinkDetails" {% if post.row('type') != "link" %}style='display:none'{% endif %}>
+		<div class="formField">
+			<label for="link">{{ l("LINK") }}
+				<a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" style="float:right" title="Link sub fields Are no longer supported from Facebook API">
+				<i class="fa fa-question-circle" aria-hidden="true"></i></a>
+			</label>
+			<input type='text' name='link' class="form-control" id="link" value="{{ input_post("link") }}" placeholder='{{ l("Post link here.") }}' />
+			<span class="linkError"></span>
+		</div>
+
+		{% if app_settings.enable_link_customize == 1 %}
+		<div class="linkSubFieldsToggle" style="overflow:auto">
+			<button type="button" class="btn btn-default pull-right">{{l('Customize link fields')}}</button>
+		</div>
+
+		{% set link_style = "none" %}
+		{% if input_post("name") is not empty or input_post("picture") is not empty or input_post("caption") is not empty or input_post("description") is not empty%}
+			{% set link_style = "block" %}
+		{% endif %}
+			
+		<div class="linkSubFields" style="display:{{ link_style }}">
+			<div class="formField">
+				<label for="picture">{{ l("PICTURE") }}</label>
+				<div class="input-group">
+					<input type='text' name='picture' id="picture" class="form-control"  value="{{ input_post("picture") }}" placeholder='{{ l("Post picture here.") }}' />
+					<div class="input-group-btn">
+						<button type="button" id="mediaLibraryImageLink" class="btn btn-default">
+							{{ l("Upload") }}</button>
+					</div>
+				</div>
+			</div>
+			<div class="formField">
+				<label for="name">{{ l("Title") }}</label>
+				<input type='text' id="name" name='name' class="form-control" value="{{ input_post("name") }}" placeholder='{{ l("Post title here.") }}'>
+			</div>
+			<div class="formField">
+				<label for="caption">{{ l("CAPTION") }}</label>
+				<input type='text' name='caption' id="caption" class="form-control" value="{{ input_post("caption") }}" placeholder='{{ l("Post Caption here.") }}' />
+			</div>
+			<div class="formField">
+				<label for="description">{{ l("DESCRIPTION") }}</label>
+				<textarea name='description' id="description" rows='3' cols='50' class="form-control" placeholder='{{ l("Post description here.") }}'>{{ input_post("description") }}</textarea>
+			</div>
+		</div>
+		{% endif %}
+
+
+	</div>
+
+	<div id="postImageDetails" {% if post.row('type') != "image" %}style='display:none'{% endif %}>
+		<div class="formField">
+			<label for="imageURL">{{ l("IMAGE") }}
+				<a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" style="float:right" title="Image URL">
+				<i class="fa fa-question-circle" aria-hidden="true"></i></a>
+			</label>
+			<div class="multiImages">
+				<input type='hidden' name='image_number' id="image_number" value="0" />
+				{% if post.row('type') == "image" or p.image[0] is not empty %}
+					{% for image in p.image %}
+					<div class="input-group">
+						<input type='text' name='imageURL' class="form-control" id="imageURL_{{ loop.index0 }}" value="{{ p.image[loop.index0] }}" placeholder='{{ l("Image URL.") }}' />
+						<div class="input-group-btn">
+							<button type="button" class="btn btn-default mediaLibraryImage" value="{{ loop.index0 }}">{{ l("Upload") }}</button>
+						</div>
+						<i class="fa fa-times removeImage" {% if loop.index0 == 0 %}style="display:none;"{% endif %} aria-hidden="true"></i>
+					</div>
+					{% endfor %}
+				{% else %}
+					<div class="input-group">
+						<input type='text' name='imageURL' class="form-control" id="imageURL_0" value="{{ input_post("imageURL") }}" placeholder='{{ l("Image URL.") }}' />
+						<div class="input-group-btn">
+							<button type="button" class="btn btn-default mediaLibraryImage" value="0">{{ l("Upload") }}</button>
+						</div>
+						<i class="fa fa-times removeImage" style="display:none;" aria-hidden="true"></i>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+		<button type="button" class="btn btn-default addNewImageField"><i class="fa fa-plus" aria-hidden="true"></i></button>
+	</div>
+
+	<div id="postVideoDetails" {% if post.row('type') != "video" %}style='display:none'{% endif %}>
+		<div class="formField">
+				<label for="video">{{ l("VIDEO") }}
+				<a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" style="float:right" title="Supported formats for uploaded videos: 3g2, 3gp, 3gpp, asf, avi, dat, divx, dv, f4v, flv, m2ts, m4v, mkv, mod, mov, mp4, mpe, mpeg, mpeg4, mpg, mts, nsv, ogm, ogv, qt, tod, ts, vob, wmv.">
+					<i class="fa fa-question-circle" aria-hidden="true"></i></a>
+				</label>
+				<div class="input-group">
+					<input type='text' name='video' class="form-control" id="video" value="{{ input_post("video") }}" placeholder='{{ l("Video link (3gp, avi, mov, mp4, mpeg, mpeg4, vob, wmv...etc).") }}' />
+					<div class="input-group-btn">
+						<button type="button" id="mediaLibraryVideo" class="btn btn-default">{{ l("Upload") }}</button>
+					</div>
+				</div>
+		</div>
+	</div>
+
+	{% if app_settings['enable_instant_post'] == 1 %}
+	<div class="formField">
+		<label for="defTime">{{ l('POST_INTERVAL_SEC') }}<a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" style="float:right" title="{{ l('The random interval is activated by default. the interval will be (Interval - Interval+30 seconds) Example: if you choose 60 Sec real interval will be 60 sec - 90 Sec')}}" ><i class="fa fa-question-circle" aria-hidden="true"></i></a></label>
+		<select name='defTime' id="defTime" class="form-control-select">
+			{% set selected = input_post('defTime') %}					
+			
+			{% if user_options['postInterval'] is not empty and input_post('defTime') is not empty %}
+				{% set selected = user_options['postInterval'] %}
+			{% endif %}
+
+			{% set minInterval = Options.get('min_interval') %}
+			{% set minInterval = settings.min_interval < 5 ? 5 : settings.min_interval %}
+			{% for i in minInterval ..1500 %}
+				{% set currentUserInterval = user_options['postInterval'] is not empty ? user_options['postInterval'] : minInterval %}
+				{% if currentUserInterval == i %}
+					<option value='{{ i }}' selected=="selected">{{ i }} {{ l("Sec") }}</option>
+				{% else %}
+					<option value='{{ i }}'>{{ i }} {{ l("Sec") }}</option>
+				{% endif %}
+			{% endfor %}
+		</select>
+	</div>
+	{% endif %}
+
+	<div class="formField">
+
+			{% if app_settings['enable_instant_post'] == 1 %}
+			<button onclick="return false;" class='btn btn-primary' id="post" name='post'>
+				<i class="fa fa-paper-plane" aria-hidden="true"></i> {{ l("SEND_NOW") }}
+			</button>
+		 	{% endif %}
+		 	
+			{% if input_post("postId") != "" %}
+				<button onclick="return false;" class='btn btn-primary' id="updatepost" name='updatepost'>
+				<i class="fa fa-floppy-o" aria-hidden="true"></i>{{ l("Update post") }}</button>
+			{% else %}
+				<button onclick="return false;" class='btn btn-primary' id="savepost" name='savepost'>
+				<i class="fa fa-floppy-o" aria-hidden="true"></i> {{ l("Save post") }}</button>
+			{% endif %}
+		
+		<button onclick="return false;" class='btn btn-primary' id="scheduledpost">
+			 <i class="fa fa-calendar" aria-hidden="true"></i> {{ l("SCHEDULED_POSTS") }} 
+		</button>
+	</div>
+	
+	{% include "schedule_posts/schedule_block.twig" %}
+
+	<div class="row scheduledpost">
+		<div class="col-lg-12">
+			<button onclick="return false;" class='btn btn-primary' id="saveScheduledPost" name='scheduledpost'>
+				<i class="fa fa-calendar" aria-hidden="true"></i> {{ l("SAVE_SCHEDULED_POSTS") }}
+			</button>
+		</div>
+	</div>
+
+	<div class="preloader"></div>
+	<div class="messageBox"></div>
+</div>
+</div>
+
+<div id="mediaLibModalImage" class="modal fade" role="dialog" tabindex="-1" data-backdrop="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">{{ l("Media library") }}</h4>
+			</div>
+			<div class="modal-body">
+				<div id="elfinderImage"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="mediaLibModalVideo" class="modal fade" role="dialog" tabindex="-1" data-backdrop="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">{{ l("Media library") }}</h4>
+			</div>
+			<div class="modal-body">
+				<div id="elfinderVideo"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Save post dialog -->
+<div id="postTitleModal" class="modal fade" role="dialog" data-backdrop="static">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">{{ l("POST_TITLE") }}</h4>
+			</div>
+			<div class="modal-body">
+				<div class="messageBoxModal"></div>
+				<div class="formField">
+					<label class="sr-only" for="postTitle">{{ l("POST_TITLE") }}</label>
+					<input type="text" name='postTitle' id="postTitle" class="form-control" placeholder='{{ l("POST_TITLE") }}' value="{{ input_post("postTitle") }}" />
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">{{ l("CLOSE") }}</button>
+				<button onclick="return false;" id="savePostModal" class="btn btn-primary">{{ l("SAVE_POST") }}</button>
+			</div>
+		</div>
+	</div>
+</div>

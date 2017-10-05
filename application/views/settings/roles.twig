@@ -1,0 +1,523 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l('Roles') }}
+{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+<form method='POST' class="settings" novalidate>
+	<div class="row">
+		<div class="tabbable tabs-left">
+			<div class="col-xs-12 col-sm-3 settingsTabs">
+				{% set current_page = 'roles' %}
+				{% include "settings/tabs.twig" %}
+			</div>
+			<div class="col-xs-12 col-sm-9 settingsContent">
+				<div class="tab-content">
+
+					{{ form_open() }}
+
+					<h4 class="tab-title"><i class="fa fa-fw fa-users"></i> {{ l('Roles') }}</h4>
+					<div class="managepermissionsErrors"></div>
+
+					<button class="btn btn-primary" type="button" data-toggle="modal" data-target="#addNewRole" style='float:right;'>{{ l('Add role') }}</button>
+					<div class="clear"></div>
+
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<td>{{ l('Name') }}</td>
+								<td></td>
+							</tr>
+						</thead>
+						<tbody>
+							{% for role in roles.getAll() %}
+								{% set listRoles = json_decode(role.permissions) %}
+								{% if listRoles.admin is empty %}
+									<tr class="roleRow">
+									<td>{{ l(role.name)|capitalize }}</td>
+									<td>
+										<button type="button" id="delete" data-roleid="{{ role.id }}" name="delete" class="btn btn-danger deleteRoleBtn">{{ l('Delete') }}</button>
+										<button type="button" value="{{ role.id }}" name="edit" class="btn btn-primary editRoleBtn">{{ l('Edit') }}</button>
+										<button type="button" value="{{ role.id }}" name="edit" class="btn btn-primary roleDetailsBtn">{{ l('Details') }}</button>
+									</td>
+									</tr>
+								{% endif %}
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+
+<!-- New role modal -->
+<div id="addNewRole" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ l('Add new role') }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class='addNewRolelerts'></div>	
+        <form method="POST">
+
+			<label for="roleName">{{ l('Role name') }}</label>
+			<input type="text" name="name" id="roleName" class="form-control" placeholder="Role name">
+
+			<div class="row">
+				<div class="col-sm-6">
+					<label for="new_maxPosts">{{ l('Maximum posts per day') }}</label>
+					<input type="number" name="maxPosts" id="new_maxPosts" class="form-control" placeholder="{{ l('Maximum posts per day') }}">
+				</div>
+				<div class="col-sm-6">
+					<label for="new_maxFbAccount">{{ l('Maximum facebook accounts') }}</label>
+					<input type="number" name="maxFbAccount" id="new_maxFbAccount" class="form-control" placeholder="{{ l('Maximum facebook accounts') }}">
+
+				</div>
+			</div>
+
+			{% if kpModules.auto_comment is defined or kpModules.auto_like is defined %}
+				<div class="row">
+				{% if kpModules.auto_comment is defined %}
+					<div class="col-sm-6">
+						<label for="max_comments">{{ l('Maximum comments per day') }}</label>
+						<input type="number" name="max_comments" id="max_comments" class="form-control" placeholder="{{ l('Maximum comments per day') }}">
+					</div>
+				{% endif %}
+				{% if kpModules.auto_like is defined %}
+				<div class="col-sm-6">
+					<label for="max_likes">{{ l('Maximum likes per day') }}</label>
+					<input type="number" name="max_likes" id="max_likes" class="form-control" placeholder="{{ l('Maximum likes per day') }}">
+				</div>
+				{% endif %}
+				</div>
+			{% endif %}
+			
+			<div class="row">
+				<div class="col-sm-6">
+					<label for="new_accountExpiry">{{ l('Account expire ( In days )') }}</label>
+					<input type="number" name="new_accountExpiry" id="new_accountExpiry" class="form-control" placeholder="{{ l('Account expire ( In days )') }}">
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="input-group">
+						<input type="checkbox" class='checkbox-style upload_videos' id="new_upload_videos" name="new_upload_videos" aria-label="{{ l('Media library') }}"  />
+						<label for="new_upload_videos"></label> {{ l('Upload Videos') }}
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="input-group">
+						<input type="checkbox" class='checkbox-style upload_images' id="new_upload_images" name="new_upload_images" aria-label="{{ l('Media library') }}"  />
+						<label for="new_upload_images"></label> {{ l('Upload Images') }}
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-6">
+					<label for="max_upload">{{ l('Max upload') }} <small>( {{ l('MB') }} )</small></label>
+					<input type="number" name="maxUpload" id="max_upload" class="form-control" placeholder="{{ l('Max upload') }}">
+				</div>
+			</div>
+
+		</form>		
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ l("Close") }}</button>
+        <input type='button' class='btn btn-primary' id="addNewRoleBtn" value='{{ l("Add Role") }}'>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- New role modal -->
+<div id="editRoleModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ l('Edit role') }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class='editRolelerts'></div>	
+        <form method="POST">
+        	<input type="hidden" name="roleid" id="roleid" value="">
+			<label for="roleName">{{ l('Role name') }}</label>
+			<input type="text" name="name" id="roleName" class="form-control" placeholder="Role name">
+
+			<div class="row">
+				<div class="col-sm-6">
+					<label for="new_maxPosts">{{ l('Maximum posts per day') }}</label>
+					<input type="number" name="maxPosts" id="new_maxPosts" class="form-control" placeholder="{{ l('Maximum posts per day') }}">
+				</div>
+				<div class="col-sm-6">
+					<label for="new_maxFbAccount">{{ l('Maximum facebook accounts') }}</label>
+					<input type="number" name="maxFbAccount" id="new_maxFbAccount" class="form-control" placeholder="{{ l('Maximum facebook accounts') }}">
+				</div>
+			</div>
+				
+			{% if kpModules.auto_comment is defined or kpModules.auto_like is defined %}
+				<div class="row">
+				{% if kpModules.auto_comment is defined %}
+					<div class="col-sm-6">
+						<label for="max_comments">{{ l('Maximum comments per day') }}</label>
+						<input type="number" name="max_comments" id="max_comments" class="form-control" placeholder="{{ l('Maximum comments per day') }}">
+					</div>
+				{% endif %}
+				{% if kpModules.auto_like is defined %}
+				<div class="col-sm-6">
+					<label for="max_likes">{{ l('Maximum likes per day') }}</label>
+					<input type="number" name="max_likes" id="max_likes" class="form-control" placeholder="{{ l('Maximum likes per day') }}">
+				</div>
+				{% endif %}
+				</div>
+			{% endif %}
+
+			<div class="row">
+				<div class="col-sm-6">
+					<label for="new_accountExpiry">{{ l('Account expire ( In days )') }}</label>
+					<input type="number" name="new_accountExpiry" id="new_accountExpiry" class="form-control" placeholder="{{ l('Account expire ( In days )') }}">
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="input-group">
+						<input type="checkbox" class='checkbox-style upload_videos' id="edit_upload_videos" name="edit_upload_videos" aria-label="{{ l('Media library') }}"  />
+						<label for="edit_upload_videos"></label> {{ l('Upload Videos') }}
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="input-group">
+						<input type="checkbox" class='checkbox-style upload_images' id="edit_upload_images" name="edit_upload_images" aria-label="{{ l('Media library') }}"  />
+						<label for="edit_upload_images"></label> {{ l('Upload Images') }}
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-6">
+					<label for="edit_max_upload">{{ l('Max upload') }} <small>( {{ l('MB') }} )</small></label>
+					<input type="number" name="maxUpload" id="edit_max_upload" class="form-control" placeholder="{{ l('Max upload') }}">
+				</div>
+			</div>
+
+		</form>		
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ l("Close") }}</button>
+        <input type='button' class='btn btn-primary' id="editRoleModalBtn" value='{{ l("Edit Role") }}'>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- New role modal -->
+<div id="roleDetailsModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ l('Role details') }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class='roleDetailsAlerts'></div>	
+        <form method="POST">
+        	<input type="hidden" name="roleid" id="roleid" value="">
+        	<div class="roleDetailsSection"></div>
+		</form>		
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ l("Close") }}</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{# Box variables #}
+{% set box_id = "role" %}
+{% set delete_msg = l("Are you sure you want to delete the role?") %}
+{% include "blocks/delete_modal.twig" %}
+
+{% endblock %}
+
+{% block javascripts_footer %}
+	{{ parent() }}
+	<script src="{{ assets('theme/default/js/helpers.js') }}"></script>
+
+	<script>
+		$(function(){
+			// Add role
+			$( "#addNewRoleBtn" ).click(function(){
+	      		kp_preloader("on",'#addNewRole .modal-body');
+	           $.ajax({
+	            url: '{{ base_url("settings/roles/add") }}',
+	            dataType: 'json',
+	            type: 'post',
+	            contentType: 'application/x-www-form-urlencoded',
+	            data: { 
+	            	name: $('#roleName').val(),
+	            	maxPosts: $('#new_maxPosts').val(),
+	            	maxFbAccount: $('#new_maxFbAccount').val(),
+	            	max_comments: $('#max_comments',"#addNewRole").val(),
+	            	max_likes: $('#max_likes',"#addNewRole").val(),
+	            	accountExpiry: $('#new_accountExpiry').val(),
+	            	upload_videos: $('#new_upload_videos', "#addNewRole").is(":checked") ? 1 : 0,
+	            	upload_images: $('#new_upload_images', "#addNewRole").is(":checked") ? 1 : 0,
+	            	max_upload: $('#max_upload').val(),
+	            	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+	            },
+	            success: function( data, textStatus, jQxhr ){
+	                if(data.status == "success"){
+	                	if(data.message !== null && typeof data.message === 'object'){ 
+		                	htmlData = "<ul>";
+		                    Object.keys(data.message).forEach(function(key) {
+		                      htmlData += "<li>" + data.message[key] + "</li>";
+		                      });
+		                    htmlData += "</ul>";
+		               	}else{
+		                    htmlData = data.message;
+		            	}
+	                	alertBox(htmlData,"success",".addNewRolelerts",false,true);
+	                	$(document).on('hide.bs.modal','#addNewRole', function () {
+	                		location.href = "{{ base_url('settings/roles') }}";
+	                	});
+	                }else{
+	                	htmlData = "<ul>";
+	                	if(data.message !== null && typeof data.message === 'object'){
+							Object.keys(data.message).forEach(function(key) {
+							    htmlData += "<li>" + data.message[key] + "</li>";
+							});
+	                	}else{
+	                		htmlData += "<li>" + data.message + "</li>";
+	                	}
+						htmlData += "</ul>";
+	                	alertBox(htmlData,"danger",".addNewRolelerts",false,true);
+	                }
+	            },
+	            error: function( jqXhr, textStatus, errorThrown ){ console.log(errorThrown); },
+	            complete: function(){
+	            	kp_preloader("off",'#addNewRole .modal-body');
+	            }
+	          });
+	      	});
+
+	      	{# Edit role #}
+			$( ".editRoleBtn" ).click(function(){
+				kp_preloader("on",'#editRoleModal .modal-body');
+				var editRole = $("#editRoleModal");
+				editRole.modal("show");
+				$('#roleid', editRole).val($(this).val());
+		    	$.ajax({
+		            url: '{{ base_url("settings/roles/details") }}',
+		            dataType: 'json',
+		            type: 'post',
+		            contentType: 'application/x-www-form-urlencoded',
+		            data: { 
+		            	role_id: $('#roleid').val(),
+		            	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+		            },
+		            success: function( data, textStatus, jQxhr ){
+		                if(data.status == "ok"){
+		                	$('#roleName', editRole).val(data.role.name);
+	              			$('#new_maxPosts', editRole).val(data.role.max_posts);
+	              			$('#new_maxFbAccount', editRole).val(data.role.max_fbaccount);
+	              			$('#new_accountExpiry', editRole).val(data.role.account_expiry);
+	              			$('#max_comments', editRole).val(data.role.max_comments);
+	              			$('#max_likes', editRole).val(data.role.max_likes);
+	              			if(data.role.upload_videos == 1){
+			                  $('#edit_upload_videos', editRole).prop("checked",true);
+			                }
+			                if(data.role.upload_images == 1){
+			                  $('#edit_upload_images', editRole).prop("checked",true);
+			                }
+			                $('#edit_max_upload', editRole).val(data.role.max_upload);
+		                }else{
+		                	htmlData = "<ul>";
+		                	if(data.message !== null && typeof data.message === 'object'){
+								Object.keys(data.message).forEach(function(key) {
+								    htmlData += "<li>" + data.message[key] + "</li>";
+								});
+		                	}else{
+		                		htmlData += "<li>" + data.message + "</li>";
+		                	}
+							htmlData += "</ul>";
+		                	alertBox(htmlData,"danger",".editRolelerts",false,true);
+		                }
+		            },
+		            error: function( jqXhr, textStatus, errorThrown ){ console.log(errorThrown); },
+		            complete: function(){
+		            	kp_preloader("off",'#editRoleModal .modal-body');
+		            }
+		          });
+		    });
+
+		    $( "#editRoleModalBtn" ).click(function(){
+	      		kp_preloader("on",'#editRoleModal .modal-body');
+	      		var editRole = $("#editRoleModal");
+	           $.ajax({
+	            url: '{{ base_url("settings/roles/update") }}',
+	            dataType: 'json',
+	            type: 'post',
+	            contentType: 'application/x-www-form-urlencoded',
+	            data: { 
+	            	role_id: $('#roleid', editRole).val(),
+	            	name: $('#roleName', editRole).val(),
+	            	maxPosts: $('#new_maxPosts', editRole).val(),
+	            	maxFbAccount: $('#new_maxFbAccount', editRole).val(),
+	            	max_comments: $('#max_comments', editRole).val(),
+	            	max_likes: $('#max_likes', editRole).val(),
+	            	accountExpiry: $('#new_accountExpiry', editRole).val(),
+	            	upload_videos: $('#edit_upload_videos', editRole).is(":checked") ? 1 : 0,
+		            upload_images: $('#edit_upload_images', editRole).is(":checked") ? 1 : 0,
+		            max_upload: $('#edit_max_upload', editRole).val(),
+	            	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+	            },
+	            success: function( data, textStatus, jQxhr ){
+	                if(data.status == "success"){
+	                	if(data.message !== null && typeof data.message === 'object'){ 
+		                	htmlData = "<ul>";
+		                    Object.keys(data.message).forEach(function(key) {
+		                      htmlData += "<li>" + data.message[key] + "</li>";
+		                      });
+		                    htmlData += "</ul>";
+		               	}else{
+		                    htmlData = data.message;
+		            	}
+	                	alertBox(htmlData,"success",".editRolelerts",false,true);
+	                	$(document).on('hide.bs.modal','#editRoleModal', function () {
+	                		location.href = "{{ base_url('settings/roles') }}";
+	                	});
+	                }else{
+	                	htmlData = "<ul>";
+	                	if(data.message !== null && typeof data.message === 'object'){
+							Object.keys(data.message).forEach(function(key) {
+							    htmlData += "<li>" + data.message[key] + "</li>";
+							});
+	                	}else{
+	                		htmlData += "<li>" + data.message + "</li>";
+	                	}
+						htmlData += "</ul>";
+	                	alertBox(htmlData,"danger",".editRolelerts",false,true);
+	                }
+	            },
+	            error: function( jqXhr, textStatus, errorThrown ){ console.log(errorThrown); },
+	            complete: function(){
+	            	kp_preloader("off",'#editRoleModal .modal-body');
+	            }
+	          });
+	      	});
+
+			{# Delete action #}
+		    $(".deleteRoleBtn").click(function(){
+				$("#delete_role").modal("show");
+				deleteRoleBtn = $(this);
+		    });
+
+		    $(".deleteBtn_role" ).click(function(){
+			    $.ajax({
+			      url: '{{ base_url("settings/roles/delete") }}',
+			      dataType: 'json',
+			      type: 'post',
+			      contentType: 'application/x-www-form-urlencoded',
+			      data: { 
+			      	id: deleteRoleBtn.attr('data-roleid'),
+			      	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+			      },
+			      success: function( data, textStatus, jQxhr ){
+			        if(data.status == "success"){
+			        	alertBox(data.message,"success",".deleteAlertBox_role",false,false);
+		            	$(".deleteBtn_role").prop('disabled', true);
+			        	$(document).on('hide.bs.modal','#delete_role', function () {
+			        		location.reload();
+			        	});
+			        }else{
+			        	alertBox(data.message,"danger",".deleteAlertBox_role",false,false);
+			        }
+			      },
+			      error: function( jqXhr, textStatus, errorThrown ){ 
+			      	console.log(errorThrown);
+			      	alertBox("{{ l('Unable to complete your request') }}","danger",".deleteAlertBox_role",false,false);
+			      }
+			    });
+
+			    $('.deleteBox_content_role').html("");
+			});
+
+			{# Role details #}
+			$( ".roleDetailsBtn" ).click(function(){
+				kp_preloader("on",'#roleDetailsModal .modal-body');
+				var roleDetails = $("#roleDetailsModal");
+				roleDetails.modal("show");
+				$('#roleid', roleDetails).val($(this).val());
+				$('.roleDetailsSection', roleDetails).html("");
+		    	$.ajax({
+		            url: '{{ base_url("settings/roles/details") }}',
+		            dataType: 'json',
+		            type: 'post',
+		            contentType: 'application/x-www-form-urlencoded',
+		            data: { 
+		            	role_id: $('#roleid', roleDetails).val(),
+		            	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+		            },
+		            success: function( data, textStatus, jQxhr ){
+		                if(data.status == "ok"){
+		                	var htmlData = "<ul class='list-group list-group-flush'>";
+									htmlData += "<li class='list-group-item'><strong>{{ l('Name') }}</strong> : <span class='badge'>"+data.role.name+"</span></li>";
+									htmlData += "<li class='list-group-item'><strong>{{ l('Max posts') }}</strong> : <span class='badge'>"+data.role.max_posts+"</span></li>";
+									
+									htmlData += "<li class='list-group-item'><strong>{{ l('Max Facebook account') }}</strong> : <span class='badge'>"+data.role.max_fbaccount+"</span></li>";
+
+									{% if kpModules.auto_comment is defined %}
+									htmlData += "<li class='list-group-item'><strong>{{ l('Max comments') }}</strong> : <span class='badge'>"+data.role.max_comments+"</span></li>";
+									{% endif %}
+
+									{% if kpModules.auto_like is defined %}
+									htmlData += "<li class='list-group-item'><strong>{{ l('Max likes') }}</strong> : <span class='badge'>"+data.role.max_likes+"</span></li>";
+									{% endif %}
+
+									htmlData += "<li class='list-group-item'><strong>{{ l('Account Expiry') }}</strong> : <span class='badge'>"+data.role.account_expiry+"</span></li>";
+
+									htmlData += "<li class='list-group-item'><strong>{{ l('Can upload videos') }}</strong> : ";
+									htmlData += data.role.upload_videos == 1 ? "<span class='badge badge-success'>{{ l('Yes') }}</span>" : "<span class='badge badge-danger'>{{ l('No') }}</span>" ;
+									htmlData += "</li>";
+
+									htmlData += "<li class='list-group-item'><strong>{{ l('Can upload images') }}</strong> : ";
+									htmlData += data.role.upload_images == 1 ? "<span class='badge badge-success'>{{ l('Yes') }}</span>" : "<span class='badge badge-danger'>{{ l('No') }}</span>" ;
+									htmlData += "</li>";
+
+									htmlData += "<li class='list-group-item'><strong>{{ l('Max Upload') }}</strong> : <span class='badge'>"+data.role.max_upload+" {{ l('MB') }}</span></li>";
+
+	            				htmlData += "</ul>";
+		                	$('.roleDetailsSection', roleDetails).html(htmlData);
+		                }else{
+		                	htmlData = "<ul>";
+		                	if(data.message !== null && typeof data.message === 'object'){
+								Object.keys(data.message).forEach(function(key) {
+								    htmlData += "<li>" + data.message[key] + "</li>";
+								});
+		                	}else{
+		                		htmlData += "<li>" + data.message + "</li>";
+		                	}
+							htmlData += "</ul>";
+		                	alertBox(htmlData,"danger",".roleDetailsAlerts",false,true);
+		                }
+		            },
+		            error: function( jqXhr, textStatus, errorThrown ){ console.log(errorThrown); },
+		            complete: function(){
+		            	kp_preloader("off",'#roleDetailsModal .modal-body');
+		            }
+		          });
+		    });
+		});
+	</script>
+{% endblock %}

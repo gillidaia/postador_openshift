@@ -1,0 +1,86 @@
+<div class="panel panel-default">
+<div class="panel-heading">
+  <h4 class="panel-title">
+    <a data-toggle="collapse" data-parent="#accordion" href="#theme_settings">
+    <i class="fa fa-fw fa-paint-brush" aria-hidden="true"></i> 
+	<span>{{ l('Theme settings') }}</span></a>
+  </h4>
+</div>
+<div id="theme_settings" class="panel-collapse collapse">
+	<div class="panel-body">
+		<div class="input-group">
+			{% set site_logo = input_post("site_logo") is not empty ? input_post("site_logo") : app_settings["site_logo"] %}
+			<label for="site_logo">{{ l('Site logo') }} <small>(Recommended size 100x32 px )</small></label>
+			<input type="text" name="site_logo" class="form-control" id="site_logo" placeholder="{{ l('Site logo') }}" value="{{ site_logo }}" />
+		</div>
+		
+		<div class="input-group">
+			{% set site_logo_50 = input_post("site_logo_50") is not empty ? input_post("site_logo_50") : app_settings["site_logo_50"] %}
+			<label for="site_logo_50">{{ l('Site logo') }} <small>(Recommended size 50x50 px )</small></label>
+			<input type="text" name="site_logo_50" class="form-control" id="site_logo_50" placeholder="{{ l('Site logo') }}" value="{{ site_logo_50 }}" />
+		</div>
+
+		<div class="input-group">
+			{% set site_logo_large = input_post("site_logo_large") is not empty ? input_post("site_logo_large") : app_settings["site_logo_large"] %}
+			<label for="site_logo_large">{{ l('Site large logo') }} <small>(Recommended size 300x100 px )</small></label>
+			<input type="text" name="site_logo_large" class="form-control" id="site_logo_large" placeholder="{{ l('Site large logo') }}" value="{{ site_logo_large }}" />
+		</div>
+			
+		<div class="input-group">
+			{% set site_favicon = input_post("site_favicon") is not empty ? input_post("site_favicon") : app_settings["site_favicon"] %}
+			<label for="site_favicon">{{ l('Site favicon') }}</label>
+			<input type="text" name="site_favicon" class="form-control" id="site_favicon" placeholder="{{ l('site favicon') }}" value="{{ site_favicon }}" />
+		</div>
+
+		<div class="input-group">
+			{% set site_description = input_post("site_description") is not empty ? input_post("site_description") : app_settings["site_description"] %}
+			<label for="site_description">{{ l('Site meta description') }} </label>
+			<textarea name="site_description" class="form-control" id="site_description" placeholder="{{ l('Site description') }}" >{{ site_description }}</textarea>
+		</div>
+
+		<div class="row">
+			<div class="col-md-6">
+				<div class="input-group">
+					{% set theme_color = input_post("theme_color") is not empty ? input_post("theme_color") : app_settings["theme_color"] %}
+					<label for="theme_color">{{ l('Theme color') }}</label>
+					<input type="text" name="theme_color" class="form-control jscolor" id="theme_color" placeholder="{{ l('Theme color') }}" value="{{ theme_color }}">
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="input-group">
+					{% set links_color = input_post("links_color") is not empty ? input_post("links_color") : app_settings["links_color"] %}
+					<label for="links_color">{{ l('Theme links color') }}</label>
+					<input type="text" name="links_color" class="form-control jscolor" id="links_color" placeholder="{{ l('Theme links color') }}" value="{{ links_color }}">
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-6">
+				<div class="input-group">
+					{% set public_bg_image = input_post("public_bg_image") is not empty ? input_post("public_bg_image") : app_settings["public_bg_image"] %}
+					<label for="public_bg_image">{{ l('Theme background image') }} <small>{{ l('Public pages (Login page, Register page ..)') }}</small></label>
+					<input type="text" name="public_bg_image" class="form-control" id="public_bg_image" placeholder="{{ l('Theme background image') }}" value="{{ public_bg_image }}">
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="input-group">
+					{% set public_bg_color = input_post("public_bg_color") is not empty ? input_post("public_bg_color") : app_settings["public_bg_color"] %}
+					<label for="public_bg_color">{{ l('Theme background color') }} <small>{{ l('Public pages (Login page, Register page ..)') }}</small></label>
+					<input type="text" name="public_bg_color" class="form-control jscolor" id="public_bg_color" placeholder="{{ l('Theme background color') }}" value="{{ public_bg_color }}">
+				</div>
+			</div>
+		</div>
+
+		<div class="input-group">
+			{% set footer_text = input_post("footer_text") is not empty ? input_post("footer_text") : app_settings["footer_text"] %}
+			<label for="footer_text">{{ l('Footer text') }} <small>({{ l('Support HTML tags') }})</small></label>
+			<textarea name="footer_text" class="form-control" id="footer_text" placeholder="{{ l('Footer text') }}" >{{ footer_text }}</textarea>
+		</div>
+
+		<input type="submit" name="save" value="{{ l('SAVE_CHANGES') }}" class="btn btn-primary" />
+	
+	
+	</div>
+</div>
+</div>

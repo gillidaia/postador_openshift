@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:og="http://ogp.me/ns#"
+      xmlns:fb="https://www.facebook.com/2008/fbml">
+	<head>
+
+
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta name="description" content="{{ description }}">
+	
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="image" content="{{ image }}">
+	<link rel="image_src" href="{{ image }}">
+	<meta name="author" content="{{ author }}">
+
+	{% if app_id is not empty %}
+	<meta property="fb:app_id" content="{{ app_id }}"/>
+	{% endif %}
+
+	{# OG basic meta #}
+	<meta property="og:title" content="{{ title }}"/>
+	<meta property="og:description" content="{{ description }}"/>
+	<meta property="og:image" content="{{ image }}"/>
+	<meta property="og:image:url" content="{{ image }}" />
+	<meta property="og:image:width" content="470" />
+	<meta property="og:image:height" content="265" />
+	<meta property="og:site_name" content="{{ title }}"/>
+	
+	{# OG video type #}
+	{% if is_video == true%}
+	<meta property="og:video" content="{{ video_url }}">
+	<meta property="og:video:type" content="application/x-shockwave-flash">
+	<meta property="og:video:width" content="640">
+	<meta property="og:video:height" content="360">
+	{% endif %}
+
+	<meta property="og:type" content="{{ type }}"/>
+
+	{# Twitter card #}
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="{{ domain }}">
+	<meta name="twitter:title" content="{{ title }}">
+	<meta name="twitter:description" content="{{ description }}">
+	<meta name="twitter:domain" content="{{ domain }}">
+
+	{# Item properties #}
+	<meta itemprop="description" content="{{ description }}">
+	<meta itemprop="name" content="{{ title }}">
+	<meta itemprop="image" content="{{ image }}">
+	<link itemprop="embedURL" href="{{ url }}">
+
+	<title>{{ title }}</title>
+	{% if redirect == true %}
+		<script type="text/javascript">
+		setTimeout(function(){window.location.href='{{ url }}';},0);</script>
+	{% endif %}
+	</head>
+		<style type="text/css">
+		div#conetnt {
+		    background: white;
+		    width: 50%;
+		    margin: auto;
+		    border-radius: 5px;
+		    overflow: hidden;
+		    border: 1px solid #ddd;
+		}
+
+		h1 {
+		    background: #ececec;
+		    padding: 5px 15px;
+		    margin: 0px;
+		}
+
+		h1 a {
+		    color: #868686;
+		    text-decoration: none;
+		    font-family: serif;
+		    font-size: 26px;
+		}
+
+		img {
+		    width: 100%;
+		}
+
+		p {
+		    margin: 0;
+		    padding: 0;
+		}
+
+		p.description {
+		    padding: 20px 10px;
+		    border-top: 1px solid #ddd;
+		    border-bottom: 1px solid #ddd;
+		}
+		a.readmore {
+		    float: right;
+		    padding: 5px 10px 10px;
+		    color: #2354b1;
+		    text-decoration: none;
+		    font-weight: bold;
+		}
+		.thumbnail {
+		    max-height: 360px;
+		    overflow: hidden;
+		}
+	</style>
+	<body>
+		{% if redirect == true %}
+			Redirecting to {{ url }}
+		{% else %}
+		<div id="conetnt">
+		<h1 class="title"><a href="{{ url }}">{{ title }}</a></h1>
+		<div class="thumbnail"><a href="{{ url }}"><img src="{{ image }}" border="0"></a></div>
+		<p class="description">{{ description }}</p>
+		<a href="{{ url }}" class="readmore">Read more</a>
+		{% endif %}
+	</div>
+	</body>
+</html>

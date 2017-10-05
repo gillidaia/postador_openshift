@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html dir="{{ l("DIR") }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="{{ app_settings.site_description }}">
+  <meta name="author" content="PandiSoft - pandisoft.com">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  {% if app_settings['site_favicon'] is empty %}
+    <link rel="icon" type="image/png" href="{{ assets('theme/default/images/kp_favicon.png?v=' ~ assets_version) }}" >
+  {% else %}
+    <link rel="icon" type="image/png" href="{{ app_settings['site_favicon'] }}" >
+  {% endif %}
+  <title>{% block title %}{% endblock %} | {{ app_settings.sitename }}</title>
+{% block stylesheets %}
+  <link href="{{ assets('theme/default/bootstrap/css/bootstrap.min.css?v=' ~ assets_version) }}" rel="stylesheet">
+  <link href="{{ assets('theme/default/css/font-awesome.css?v=' ~ assets_version) }}" rel="stylesheet" />
+  {% if lang("DIR") == "rtl" %}
+    <link href="{{ assets('theme/default/css/rtl.css?v=' ~ assets_version) }}" rel="stylesheet" />
+  {% endif %}
+{% endblock %}
+  {% block javascripts %}
+    <script src="{{ assets('theme/default/js/jquery.js?v=' ~ assets_version) }}"></script>
+  {% endblock %}
+  {% block head_js %}
+    <script src="{{ assets('theme/default/bootstrap/js/bootstrap.min.js?v=' ~ assets_version) }}"></script>
+    <script type="text/javascript">
+      $('[data-toggle="kp_tooltip"]').tooltip();
+    </script>
+  {% endblock %}
+  {{ app_settings['head_js']|raw }}
+</head>
+<body class="hold-transition skin-blue sidebar-mini {% if sidebar_status == "true" %}sidebar-collapse{% endif %}">
+<noscript>
+  <div class="alerts alert alert-danger">
+    <span class="glyphicon glyphicon-warning-sign"></span>
+    <p class='alerttext'>JavaScript MUST be enabled in order for you to use kingposter. However, it seems JavaScript is either disabled or not supported by your browser. If your browser supports JavaScript, Please enable JavaScript by changing your browser options, then try again.</p>
+  </div>
+</noscript>
+  {% block header %}
+  {% endblock %}
+  <div id="particles-js"></div>
+  <div id="wrapper">
+  {% block body %}
+    {% block flash_bag %}
+      {% include "blocks/flash_bag.twig" %}
+    {% endblock %}
+    {% block ads %}
+      {% include "blocks/ads.twig" %}
+    {% endblock %}
+    {% if user is empty and user.isLoggedIn() == false %} 
+        <select class="form-control selectLang">
+            {% set currentUserLang = current_lang is not empty ? current_lang : DEFAULT_LANG %}
+              {% for lang in lang.availableLanguages %}
+                {% set selected = currentUserLang == lang ? 'selected' : '' %} 
+                <option value='{{ lang }}' {{ selected }}>{{ lang|capitalize }}</option>
+              {% endfor %}
+          </select>
+      {% endif %}
+  {% endblock %}
+  {% block footer %}
+    <p class="footer">{{ l('COPYRIGHT') }} &copy {{ "now"|date("Y") }} 
+      {% if app_settings['footer_text'] is empty %}
+        Powered by <a href='https://pandisoft.com' target='_blank'>Kingposter</a>
+      {% else %}
+        {{ app_settings['footer_text']|raw }}
+      {% endif %}
+
+    	{% if user is not empty and user.isLoggedIn() and user.hasPermission('admin') == true %} 
+    		- {{ l('Version') }} {{ app_version }}
+    	{% endif %}
+    </p>
+  {% endblock %}
+  </div> <!-- End wrapper -->
+  
+  {% block javascripts_footer %}
+  {% endblock %}
+
+  {{ app_settings['footer_js']|raw }}
+
+</body>
+</html>

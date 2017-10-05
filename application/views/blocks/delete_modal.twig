@@ -1,0 +1,21 @@
+<div id="delete_{{ box_id }}" class="modal fade deleteBox animated zoomIn" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ l("Delete confirmation") }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="deleteAlertBox_{{ box_id }}"></div>
+        <div class="deleteBox_content_{{ box_id }}">
+          {{ delete_msg }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ l('Cancel') }}</button>
+        <button type="button" class="btn btn-danger deleteBtn_{{ box_id }}">{{ l('Delete') }}</button>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>

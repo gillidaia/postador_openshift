@@ -1,0 +1,454 @@
+<div class="panel panel-default">
+  <div class="panel-body">
+  		<div class="groupsOptions">
+			<div class="row">
+				<div class="col col-md-2">
+					<div class="form-group">
+						<div class="input-group">
+							<select id="nodescategory" name="nodescategory" class="form-control" onchange="this.form.submit()">	
+								<option value="-1">-- {{ l('All') }} --</option>
+					  			{% for gc in nodesCategories %}
+									{% if fbaccountDetails.row('default_nodes_category') == gc.id %} 
+					  					<option value="{{ gc.id }}" selected >{{ gc.category_name }}</option>
+					  				{% else %}
+					  					<option value="{{ gc.id }}">{{ gc.category_name }}</option>
+					  				{% endif %}
+								{% endfor %}
+					  		</select>
+
+					  		<div class="input-group-btn">
+					  			<button type="button" class='btn btn-danger' name="deleteCategory" id="deleteCategory" value="{{ fbaccountDetails.row('default_nodes_category') }}" data-toggle="kp_tooltip" data-placement="top" title="{{ l('Delete current category') }}">
+					  				<i class="fa fa-fw fa-trash"></i>
+					  			</button>
+					  		</div>
+
+				  		</div>
+		  			</div>
+		  		</div>
+				<div class="col col-md-10">
+
+					<div class="row">
+						<div class="col-md-7 col-sm-12">
+						<div class="row">
+							<div class="col-md-12">
+								<div class="form-group">
+									<button type="button" id="createNewCatBtn" class="btn btn-primary" data-toggle="kp_tooltip" data-placement="top" title="{{ l('Create New category') }}"/><i class="fa fa-fw fa-plus"></i> {{ l('Create category') }}</button>
+								</div>
+
+								<div class="form-group">
+									<button type="button" id="addSelectedNodes" class="btn btn-primary" data-toggle="kp_tooltip" data-placement="top" title="{{ l('Add selected nodes to a category') }}"/>
+									<span class="visible-lg">
+										<i class="fa fa-fw fa-plus"></i> {{ l('Add node') }}
+									</span>
+									<span class="hidden-lg"><i class="fa fa-fw fa-plus"></i></span>
+									</button>
+								</div>
+							
+								{% if fbaccountDetails.row() and fbaccountDetails.row('default_nodes_category') != "-1" %}
+									<div class="form-group">
+										<button type="button" id="deleteSelectedNodes"  class="btn btn-danger" data-toggle="kp_tooltip" data-placement="top" title="{{ l('Remove selected nodes') }}"/>
+										<span class="visible-lg"><i class="fa fa-fw fa-trash"></i> {{ l('Remove node') }}</span>
+										<span class="hidden-lg"><i class="fa fa-fw fa-trash"></i></span>
+										</button>
+									</div>
+								{% endif %}
+
+								<div class="form-group">
+									<button type="button" id="unHideSelectedNodes"  class="btn btn-primary" data-toggle="kp_tooltip" data-placement="top" title="{{ l('unHide selected nodes') }}"/>
+									<span class="visible-lg"><i class="fa fa-fw fa-ban"></i> {{ l('unHide node') }}</span>
+									<span class="hidden-lg"><i class="fa fa-fw fa-ban"></i></span>
+									</button>
+								</div>
+								
+								<div class="form-group">
+									<button type="button" id="hideSelectedNodes" class="btn btn-danger" data-toggle="kp_tooltip" data-placement="top" title="{{ l('Hide selected nodes') }}"/>
+									<span class="visible-lg"><i class="fa fa-fw fa-ban"></i> {{ l('Hide node') }}</span>
+									<span class="hidden-lg"><i class="fa fa-fw fa-ban"></i></span>
+									</button>
+								</div>
+							</div>
+						</div>
+						</div>
+						<div class="col-md-5 col-sm-12"><div class="row">
+							<div class="col col-md-12 toggleNode">
+								<div class="form-group groupVtoggle">
+									<input type='checkbox' class='checkbox checkbox-style' name='showGroups' id='showGroups' {% if user_options['show_groups'] == 1 %}checked {% endif %}>
+									<label for='showGroups'></label>
+									<label for='showGroups'>{{ l('Groups') }}</label>
+								</div>
+								<div class="form-group">
+									<input type='checkbox' class='checkbox checkbox-style' name='showPages' id='showPages' {% if user_options['show_pages'] == 1 %}checked{% endif %}>
+									<label for='showPages'></label>
+									<label for='showPages'>{{ l('Pages') }}</label>
+								</div>
+								<div class="form-group">
+									<input type='checkbox' class='checkbox checkbox-style' name='toggleHiddenNodes' id='toggleHiddenNodes' {% if user_options['show_hidden_nodes'] == 1 %}checked{% endif %}>
+									<label for='toggleHiddenNodes'></label>
+									<label for='toggleHiddenNodes'>{{ l('Show Hidden nodes') }}</label>
+								</div>
+							</div>
+						</div>
+					</div>
+					</div>
+					
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="panel panel-default has-responsive-table">
+ 
+	
+	{% if useDataTableP == false %}
+	<div class="panel-heading">
+		<input type="text" id="nodesFilterFiled" class="form-control" onkeyup="NodesFilter()" placeholder="{{ l('Search for groups and pages') }}">
+	</div>
+	{% endif %}
+
+  	
+  	<div class="panel-body">
+		<table class="table table-bordered table-striped dataTable tablesorter" id="groupsDataTable" width="100%">
+			<thead>
+				{% set checked = "" %}
+				{% if fbaccount.UserDefaultFbAccount() %}
+					<tr>
+						<td></td>
+						<td>{{ l('Timeline') }}</td>
+						<td colspan='3'>{{ l('VIEW_PROFILE') }}</td>
+						<td>{{ l('POST_STATUS') }}</td>
+					</tr>
+					<tr class='groupName' id='me'>
+						<td>
+							<input type='checkbox' class='fbnode checkbox checkbox-style' name='selectGroup[0]' id='selectgroup_me' value='me' {{ checked }}>
+							<label for='selectgroup_me'></label>
+						</td>
+						<td class='groupTitle' id='group_me'>{{ fbaccountDetails.row('firstname') ~ " " ~ fbaccountDetails.row('lastname') }}</td>
+						<td colspan='3'><a href='https://www.facebook.com/{{ fbaccount.UserDefaultFbAccount() }}' target='_blank'>
+							<i class="fa fa-external-link" aria-hidden="true"></i>&nbsp; {{ l('VIEW_PROFILE') }}</a>
+						</td>
+						<td>
+						<span class='postStatus_me postStatus'></span>
+						</td>
+					</tr>
+				{% endif %}
+			<tr class="thNodes">
+				<th width="20px" class="no-sort">
+					<input type='checkbox' id="checkbox-all" class="check-all checkbox-style" name='selectAllGroup' {% if input_post("selectAllGroup") %}checked{% endif %}>
+					<label for="checkbox-all"></label>
+				</th>
+				<th>{{ l('NODE_NAME') }}</th>
+				<th>{{ l('NODE_TYPE') }}</th>
+				<th>
+					<span class="hidden-xs">
+					{% if user_options['show_pages'] == 1 %}{{ l('Likes') }}{% endif %}
+					{% if user_options['show_pages'] == 1 and user_options['show_groups'] == 1 %}/{% endif %}
+					{% if user_options['show_groups'] == 1 %}{{ l('Members') }}{% endif %}
+					</span>
+				</th>
+				<th>{{ l('PRIVACY') }}</th>
+				<th>{{ l('POST_STATUS') }}</th>
+			</tr>
+			</thead>
+			<tbody>
+			{% set privacy = {"OPEN":'eye', 'CLOSED': 'eye-slash', 'SECRET': 'archive'} %}
+			
+				{% if userFbNodes %}
+					{% for node in userFbNodes %}
+						{% set nodeId = node.id %}
+						{% set nodeName = node.name %}
+						{% set page_likes = "" %}
+
+						{% if node.privacy is not empty %}
+							{% set nodeType = 'Group' %}
+						{% else %}
+							{% set nodeType = 'Page' %}
+							{% if node.likes %}
+								{% set page_likes = node.likes|number_format %}
+							{% endif %}
+						 {% endif %}
+
+						{% set nodePrivacy = node.privacy ? node.privacy : '' %}
+
+						{% if input_post('selectGroup')[i] %}
+							{% set checked = "checked='checked'" %}
+						{% endif %}
+						
+						<tr class='groupName {{ nodeType }}Type' id='{{ nodeId }}'>
+
+							<td>
+								<input type='checkbox' class='fbnode checkbox checkbox-style' name='selectGroup[{{ loop.index }}]' id='selectgroup_{{ node.id }}' value='{{ nodeId }}' {{ checked }}>
+								<label for='selectgroup_{{ nodeId }}'></label>
+							</td>
+
+							<td class='groupTitle' id='group_{{ nodeId }}'>
+								<input type='hidden' name='selectGroupName[{{loop.index }}]' value='{{ nodeName }}' />
+								<span {% if less_data == FALSE %}title="{{ nodeName }}"{% endif %}>{{ nodeName[0:60] }}{% if nodeName|length > 60 %}...{% endif %}
+
+								<a href='https://fb.com/{{ nodeId }}' target='_blank'>
+								<i class="fa fa-external-link"></i></a></span>
+
+								{% if user_options['show_hidden_nodes'] == 1 %}
+									{% if nodeType == "Group" %}
+										{% set hiddenNodesIDs = json_decode(hiddenNodes.row('hidden_groups'),TRUE) %}
+									{% else %}
+										{% set hiddenNodesIDs = json_decode(hiddenNodes.row('hidden_pages'),TRUE) %}
+									{% endif %}
+
+									<span class="HiddenNodeBadge">
+									{% if nodeId in hiddenNodesIDs %}
+									<span class="badge badge-danger">{{ l('hidden') }}</span>
+									{% endif %}
+									</span>
+								{% endif %}
+
+							</td>
+
+							<td class="nodeType">{{ l(nodeType) }}</td>
+							<td class="count">{{ node.members.summary.total_count }}{{ page_likes }}</td>
+
+							<td class="privacyAndLikes">
+								{% if node.privacy is not empty %}
+									<i class="fa fa-{{ privacy[nodePrivacy] }}"></i>
+									&nbsp;<span class="hidden-xs">{{ l(nodePrivacy) }}</span>
+									<input type='hidden' name='selectGroupPrivacy[{{ loop.index }}]' value='{{ nodePrivacy }}'>
+								{% else %}
+									-
+								{% endif %}
+							</td>
+
+							<td>
+								<span class='postStatus_{{ nodeId }} postStatus'></span>
+							</td>
+						</tr>
+					{% endfor %}
+				{% endif %}
+			</tbody>
+		</table>
+<div id="addToCategoryModal" class="modal fade" role="dialog" data-backdrop="static">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">{{ l("ADD_GROUP_TO_CATEGORY") }}</h4>
+			</div>
+			<div class="modal-body">
+				<div class="addCateMsgBoxModal"></div>
+				<select class="form-control nodescategory">
+					<option value="">-- {{ l('All') }} --</option>
+		  			{% for gc in nodesCategories %}
+		  				<option value="{{ gc.id }}">{{ gc.category_name }}</option>		
+					{% endfor %}
+				</select>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-default" data-dismiss="modal">{{ l("CLOSE") }}</button>
+				<button onclick="return false;" id="modalAddCateBtn" class="btn btn-primary">{{ l("ADD") }}</button>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+{% include "categories/create_category.twig" %}
+<script>
+	$(function(){
+
+		{# Delete a category #}
+		$('.groupsOptions').on('click','#deleteCategory', function(e) {
+			e.preventDefault();
+			$("#deleteCategory").prop('disabled', true);
+			$.ajax({
+		      url: '{{ base_url("nodes_categories/delete_category") }}',
+		      dataType: 'json',
+		      type: 'post',
+		      contentType: 'application/x-www-form-urlencoded',
+		      data: { 
+		      	categoryID: $("#deleteCategory").val(),
+				{{ config_item('csrf_token_name') }} : getCookie("{{ config_item('csrf_cookie_name') }}"),
+		      },
+		      success: function( data, textStatus, jQxhr ){
+		      	if(data.status == "success"){
+                  if(data.message !== null && typeof data.message === 'object'){
+                    htmlData = "<ul>";
+                    Object.keys(data.message).forEach(function(key) {
+                        htmlData += "<li>" + data.message[key] + "</li>";
+                    });
+                    htmlData += "</ul>";
+                    
+                  }else{
+                    htmlData = data.message;
+                  }
+                  	setTimeout(function(){
+                  		window.location.replace('{{ base_url() }}'); 
+                  	}, 1000);
+                	alertBox(htmlData,"success",false,true,true)
+                }else{
+                  if(data.message !== null && typeof data.message === 'object'){
+                    htmlData = "<ul>";
+                    Object.keys(data.message).forEach(function(key) {
+                        htmlData += "<li>" + data.message[key] + "</li>";
+                    });
+                    htmlData += "</ul>";
+                  }else{
+                    htmlData = data.message;
+                  }
+                  alertBox(htmlData,"danger",false,false,true);
+                }
+
+		        $("#deleteCategory").prop('disabled', false);
+		        	
+		      },
+		      error: function( jqXhr, textStatus, errorThrown ){ 
+		      	console.log(errorThrown);
+		      	alertBox("{{ l('Unable to complete your request, Please try again') }}","danger",true,false,true);
+		      	$("#deleteCategory").prop('disabled', false);
+		      }
+		    });
+		});	
+
+		{# Hide nodes #}
+		$('.groupsOptions').on('click','#hideSelectedNodes', function() {
+			nodes = [];
+			// Get all checked nodes
+			$('.groupName:visible .fbnode:checked').each(function(){
+				nodes.push($(this).val());
+			});
+			$.ajax({
+				url: '{{ base_url("settings/fb_accounts/hide_nodes") }}',
+				dataType: 'json',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: {
+					nodes: JSON.stringify(nodes),
+					{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+				},
+				success: function( data, textStatus, jQxhr ){
+					if(data.response == "ok"){
+						for (var i = 0; i < nodes.length; i++ ) {
+							{% if user_options['show_hidden_nodes'] == 0 %}
+								$( "#" + nodes[i] ).css('background','#ffcccc');
+								$( "#" + nodes[i] ).fadeOut(500, function() { $(this).remove(); });
+							{% else %}
+							$( "#" + nodes[i] ).find(".HiddenNodeBadge").fadeIn(500, function() { $(this).html("<span class='badge badge-danger HiddenNodeBadge'>{{ l('hidden') }}</span>"); });
+							{% endif %}
+						}
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){ 
+				  console.log(errorThrown);
+				  alertBox('{{ l('Unable to complete your request') }}',"danger",true,true);
+				}
+			});
+		});
+
+		{# unHide nodes #}
+		$('.groupsOptions').on('click','#unHideSelectedNodes', function() {
+			nodes = [];
+			// Get all checked nodes
+			$('.groupName:visible .fbnode:checked').each(function(){
+				nodes.push($(this).val());
+			});
+			$.ajax({
+				url: '{{ base_url("settings/fb_accounts/unhide_nodes") }}',
+				dataType: 'json',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: {
+					nodes: JSON.stringify(nodes),
+					{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+				},
+				success: function( data, textStatus, jQxhr ){
+					if(data.response == "ok"){
+						for (var i = 0; i < nodes.length; i++ ) {
+							$( "#" + nodes[i] ).find(".HiddenNodeBadge span").fadeOut(100, function() { $(this).remove(); });
+						}
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){ 
+				  console.log(errorThrown);
+				  alertBox('{{ l('Unable to complete your request') }}',"danger",true,true);
+				}
+			});
+		});
+
+
+		$('#toggleHiddenNodes').on('click', function() {
+			$.ajax({
+				url: '{{ base_url("home/toggleHiddenNodes") }}',
+				dataType: 'json',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: {
+					status: $('#toggleHiddenNodes').is(":checked") ? 1 : 0,
+					{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+				},
+				success: function( data, textStatus, jQxhr ){
+					if(data.status == "ok"){
+						location.reload();
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){ 
+				  console.log(errorThrown);
+				  alertBox('{{ l('Unable to complete your request') }}',"danger",true,true);
+				}
+			});
+		});
+
+		$('#showGroups').on('click', function() {
+			$.ajax({
+				url: '{{ base_url("home/toggleShowGroups") }}',
+				dataType: 'json',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: {
+					status: $('#showGroups').is(":checked") ? 1 : 0,
+					{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+				},
+				success: function( data, textStatus, jQxhr ){
+					if(data.status == "ok"){
+						if($('#showGroups').is(":checked")){
+							location.reload();
+						}else{
+							$(".GroupType").remove();
+							$(".groupsCount").html("0");
+						}
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){ 
+				  console.log(errorThrown);
+				  alertBox('{{ l('Unable to complete your request') }}',"danger",true,true);
+				}
+			});
+		});
+
+		$('#showPages').on('click', function() {
+			$.ajax({
+				url: '{{ base_url("home/toggleShowPages") }}',
+				dataType: 'json',
+				type: 'post',
+				contentType: 'application/x-www-form-urlencoded',
+				data: {
+					status: $('#showPages').is(":checked") ? 1 : 0,
+					{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+				},
+				success: function( data, textStatus, jQxhr ){
+					if(data.status == "ok"){
+						if($('#showPages').is(":checked") || !$('#showGroups').is(":checked")){
+							location.reload();
+						}else{
+							$(".PageType").remove();
+							$(".pagesCount").html("0");
+						}
+					}
+				},
+				error: function( jqXhr, textStatus, errorThrown ){ 
+				  console.log(errorThrown);
+				  alertBox('{{ l('Unable to complete your request') }}',"danger",true,true);
+				}
+			});
+		});
+
+	});	
+
+	</script>
+</div>

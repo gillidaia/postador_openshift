@@ -1,0 +1,33 @@
+{% if flash is not empty %}
+    {% for flashBag in flash %}
+      <div class='alert alert-{{ flashBag.type }}' role='alert'>
+    {% if flashBag.close == true %}
+      <a href='#' class='close' data-id="{{ flashBag.notif_Id }}" data-dismiss='alert' aria-label='close'><i class='fa fa-close fa-fw' aria-hidden='true'></i></a>
+    {% endif %}
+    
+    {% if flashBag.icon != false %}
+      <i class='fa fa-{{ flashBag.icon }} fa-fw' aria-hidden='true'></i>
+    {% endif %}
+      {% if flashBag.html %}
+        {{ flashBag.message|raw }}
+      {% else %}
+        {{ flashBag.message|nl2br }}
+      {% endif %}
+      </div>
+    {% endfor %}
+{% endif %}
+<script type="text/javascript">
+$(function(){
+  $(".close").on("click",function(){
+    if($(this).data("id") != ""){
+      $.ajax({
+        url: '{{ base_url("user_notifications/close/") }}'+$(this).data("id"),
+        dataType: 'json',
+        type: 'GET',
+        contentType: 'application/x-www-form-urlencoded',
+        error: function( jqXhr, textStatus, errorThrown ){ console.log(errorThrown); },
+        });
+    }
+  });
+});
+</script>

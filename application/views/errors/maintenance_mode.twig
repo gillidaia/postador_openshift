@@ -1,0 +1,29 @@
+{% extends "base_public.twig" %}
+
+{% block title %}{{ l('Maintenance mode') }}{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+  body { background: #fff; text-align: center; padding: 100px; }
+  h1 { font-size: 50px; }
+  body { font: 20px Helvetica, sans-serif; color: #333; }
+  article { display: block; text-align: left; width: 650px; margin: 0 auto; }
+  a { color: #dc8100; text-decoration: none; }
+  a:hover { color: #333; text-decoration: none; }
+</style>
+{% endblock %}
+{% block body %}
+  <article>
+    <h1>{{ l('Oops!') }}</h1>
+    <div>
+        <p>{{ l("Our is currently down for maintenance and should be back soon.") }}</p>
+        <br>
+        <p><a href="{{ base_url() }}">{{ l('Home page') }}</a>{% if user.isLoggedIn() %} | <a href="{{ base_url("logout") }}">{{ l('Logout') }}</a>{% endif %}</p>
+    </div>
+</article>
+<br />
+<br />
+<br />
+<br />
+{% endblock %}

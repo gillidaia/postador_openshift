@@ -1,0 +1,40 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">{{ l("POST_PREVIEW") }}</h3>
+    </div>
+    <div class="panel-body">
+		<div class="postPreview">
+			<div class="post">
+				<div class="PreviewPoster">
+					{% if fbaccountDetails.row('fb_id') is not empty %}
+					<img src='https://graph.facebook.com/{{ fbaccountDetails.row('fb_id') }}/picture?redirect=1&height=40&width=40&type=normal' style='vertical-align:top;'  onerror="this.src = 'theme/default/images/facebookUser.jpg'" />
+					{% else %}
+	                  <img src='{{ assets('theme/default/images/facebookUser.jpg') }}' width='32' height='32' style='vertical-align:middle;' />
+	                {% endif %}
+					<span class="userFullName">
+						{% if fbaccountDetails.row() is not empty %}
+							{{ fbaccountDetails.row('firstname')|capitalize ~ " " ~ fbaccountDetails.row('lastname')|capitalize }}
+						{% else %}
+							Facebook User
+						{% endif %}
+					</span>
+					<span class="postPreviewDetails">
+						{{ l("NOW") }} · 
+						{% if fbAccountDefaultApp.row() %}
+								{{ fbAccountDefaultApp.row('app_name') }}
+						{% else %}
+							{{ l("APP_NAME") }}
+						{% endif %}
+					</span>
+					<div class="clear"></div>
+				</div>
+				<p class="message">
+					<span class="defaultMessage" style="width: 60%"></span>	
+					<span class="defaultMessage" style="width: 80%"></span>
+					<span class="defaultMessage" style="width: 50%"></span>
+				</p>
+			</div>
+		</div>
+		{% include "blocks/ads.twig" %}
+	</div>
+</div>

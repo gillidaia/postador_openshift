@@ -1,0 +1,95 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+	  <h4 class="panel-title">
+	    <a data-toggle="collapse" data-parent="#accordion" href="#general">
+	    <i class="fa fa-cog"></i>
+	    <span>{{ l("General")}}</span></a>
+	  </h4>
+	</div>
+	<div id="general" class="panel-collapse collapse in">
+	  <div class="panel-body">
+		<div class="input-group">
+			{% set sitename = input_post("sitename") is not empty ? input_post("sitename") : app_settings["sitename"] %}
+			<label for="sitename">{{ l('SITE_NAME') }}</label>
+			<input type="text" name="sitename" class="form-control" id="sitename" placeholder="{{ l('SITE_NAME') }}" value="{{ sitename }}" />
+		</div>
+
+		{% if input_post("usersCanRegister") is not empty %}
+			{% set usersCanRegister = input_post("usersCanRegister") == 'on' ? "checked" : "" %}
+		{% else %}
+			{% set usersCanRegister = app_settings["users_can_register"] == 1 ? "checked" : "" %}
+		{% endif %}
+
+		<div class="input-group">
+			<input type="checkbox" class='checkbox-style' id="usersCanRegister" name="usersCanRegister" aria-label="Users can register" {{ usersCanRegister }} />
+			<label for="usersCanRegister"></label>
+			<span class="input-text">{{ l('USERS_CAN_REGISTER') }}</span>
+		</div>
+
+		<div class="input-group">
+			{% if input_post("usersMustConfirmEmail") is not empty %}
+				{% set usersMustConfirmEmail = input_post("usersMustConfirmEmail") == 'on' ? "checked" : "" %}
+			{% else %}
+				{% set usersMustConfirmEmail = app_settings["users_must_confirm_email"] == 1 ? "checked" : "" %}
+			{% endif %}
+			<input type="checkbox" id="usersMustConfirmEmail" name="usersMustConfirmEmail"  class='checkbox-style' aria-label="New users must confirm their email address" {{ usersMustConfirmEmail }}/>
+			<label for="usersMustConfirmEmail" ></label>
+			<span class="input-text">{{ l('USERS_MUST_CONFIRM_EMAIL') }}</span>
+		</div>
+
+		<div class="input-group">
+			{% if input_post("userActiveByAdmin") is not empty %}
+				{% set userActiveByAdmin = input_post("userActiveByAdmin") == 'on' ? "checked" : "" %}
+			{% else %}
+				{% set userActiveByAdmin = app_settings["user_active_by_admin"] == 1 ? "checked" : "" %}
+			{% endif %}
+			<input type="checkbox" id="userActiveByAdmin" name="userActiveByAdmin"  class='checkbox-style' aria-label="{{ l('New users accounts must be activated by an admin') }}" {{ userActiveByAdmin }}/>
+			<label for="userActiveByAdmin" ></label>
+			<span class="input-text">{{ l('New users accounts must be activated by an admin') }}</span>
+		</div>
+
+		<div class="input-group">
+			<label for="defaultRole">{{ l('New users Default role') }}</label>
+			<select name="default_role" id="defaultRole" class="form-control">
+				{% for role in roles %}
+					{% set listRoles = json_decode(role.permissions) %}
+					{% if listRoles.admin is empty %}
+						<option value="{{ role.id }}" {% if role.id == app_settings['default_role'] %}selected{% endif %}>{{ l(role.name) }}</option>
+					{% endif %}
+				{% endfor %}
+			</select>
+		</div>
+
+		<div class="input-group">
+			<label for="default_timezone">{{ l('New users Default timezone') }}</label>
+			<select name="default_timezone" id="default_timezone" class="form-control">
+				{% for timezone in timezones %}
+					<option value="{{ timezone }}" {% if timezone == app_settings['default_timezone'] %}selected{% endif %}>{{ timezone }}</option>
+				{% endfor %}
+			</select>
+		</div>
+
+		<div class="input-group">
+			<label for="default_lang">{{ l('Default language') }}</label>
+			<select name="default_lang" id="default_lang" class="form-control">
+				{% for lang in lang.availableLanguages %}
+					<option value="{{ lang }}" {% if lang == app_settings['default_lang'] %}selected{% endif %}>{{ lang|capitalize }}</option>
+				{% endfor %}
+			</select>
+		</div>
+
+		<div class="input-group">
+			{% set date_format = app_settings["date_format"] %}
+			<label for="date_format">{{ l('Date format') }}</label>
+			<select name="date_format" id="date_format" class="form-control">
+				<option value="1" {% if date_format == "m/d/Y" %}selected{% endif %}>MM/DD/YYYY</option>
+				<option value="2" {% if date_format == "d/m/Y" %}selected{% endif %}>DD/MM/YYYY</option>
+				<option value="3" {% if date_format == "Y/d/m" %}selected{% endif %}>YYYY/DD/MM</option>
+				<option value="4" {% if date_format == "Y/m/d" %}selected{% endif %}>YYYY/MM/DD</option>
+			</select>
+		</div>
+		
+		<input type="submit" name="save" value="{{ l('SAVE_CHANGES') }}" class="btn btn-primary" />
+	  </div>
+	</div>
+</div>

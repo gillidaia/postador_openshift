@@ -1,0 +1,127 @@
+<div class="row scheduledpost">
+    <div class="col-lg-12">
+      <label>{{ l('Post interval') }}</label>
+      <div class="row schedulePI">
+        <div class="col-xs-6 col-md-4">
+          <div class="input-group">
+            <span class="input-group-addon">
+              <input type="radio" name="timeType" id="intervalMunite" value="minute" checked />
+            </span>
+            <span class="form-control">{{ l('MINUTES') }}</span>
+          </div>
+        </div>
+        <div class="col-xs-6 col-md-4">
+          <div class="input-group">
+            <span class="input-group-addon">
+              <input type="radio" name="timeType" id="intervalHour" value="hour" />
+            </span>
+            <span class="form-control">{{ l('HOURS') }}</span>
+          </div>
+        </div>
+        <div class="col-xs-12 col-md-4">
+          <select name='scheduledPostInterval' id="scheduledPostInterval" class="form-control">
+            {% set minIntervalSchedule = app_settings['min_interval_schedule'] %}
+            {% for i in minIntervalSchedule ..90 %}
+              <option value='{{ i }}'>{{ i }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6">
+          <label for="scheduledPostTime">
+            {{ l('SCHEDULE_POST_START') }}
+          </label>
+          <div class="form-group">
+            <div class='input-group date'>
+              <input type='text' class="form-control" id='scheduledPostTime' />
+              <span class="input-group-addon">
+                  <span class="fa fa-calendar"></span>
+              </span>
+            </div>
+            <small style="color:red;margin:5px">
+              {{ l('Current server time') }} : {{ 'NOW'|date(date_format ~ " H:i") }}
+            </small>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <label for="scheduledPostApp">{{ l('FB_APP') }}</label>
+          <select name='scheduledPostApp' id="scheduledPostApp" class="form-control">
+            {% set selected = input_post('scheduledPostApp') ? input_post('scheduledPostApp') : fbAccountDefaultApp.row('id') %}
+            {% for app in fbAccountApps %}
+              {% set s = selected == app.appid ? "selected" : "" %}
+              <option value='{{ app.appid }}' {{ s }}>{{ app.app_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row scheduledpost">
+    
+    <div class="col-lg-12">
+      <label for="schedulePauseAfter">{{ l('Auto pause after (Posts)') }}</label>
+      <select name='schedulePauseAfter' id="schedulePauseAfter" class="form-control">
+        <option value='0'>{{ l('Off') }}</option>
+        {% for i in 1..100 %} 
+          <option value='{{ i }}'>{{ i }}</option>
+        {% endfor %}
+      </select>
+    </div>
+      
+    <div class="col-lg-12">
+      <label for="scheduleResumeAfter">{{ l('Auto resume after') }}</label>
+      <div class="row autoPause">
+        <div class="col-xs-6 col-md-4">
+          <div class="input-group">
+            <span class="input-group-addon">
+              <input type="radio" name="rftimeType" id="rfintervalMunite" value="minute" />
+            </span>
+            <span class="form-control">{{ l('MINUTES') }}</span>
+          </div>
+        </div>
+        <div class="col-xs-6 col-md-4">
+          <div class="input-group">
+            <span class="input-group-addon">
+              <input type="radio" name="rftimeType" id="rfintervalHour" value="hour" checked/>
+            </span>
+            <span class="form-control">{{ l('HOURS') }}</span>
+          </div>
+        </div>
+        <div class="col-xs-12 col-md-4">
+          <select name='scheduleResumeAfter' id="scheduleResumeAfter" class="form-control" disabled>
+            {% for i in 1..90 %} 
+              <option value='{{ i }}'>{{ i }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row scheduledpost">
+      <div class="col-xs-6">
+        <input name="schedule_id" type="hidden" id="schedule_id" value="0">
+        <label for="repeatEvery">{{ l('Repeat frequency') }}</label>
+        <select name="repeatEvery" id="repeatEvery" class="form-control">
+          <option value='0'>{{ l('Once') }}</option>
+          <option value='1'>{{ l("Every day") }}</option>
+          {% for i in 2..30 %}
+            <option value='{{ i }}'>{{ l("Every %s days",i) }}</option>
+          {% endfor %}
+          {% for i in range(40,150,10) %}
+            <option value='{{ i }}'>{{ l("Every %s days",i) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-xs-12 col-sm-6">
+        <label for="end_on">{{ l('End on') }}:</label>
+        <div class='input-group date'>
+          <input type='text' class="form-control" id='end_on' disabled />
+          <span class="input-group-addon">
+              <span class="fa fa-calendar"></span>
+          </span>
+        </div>
+      </div>
+    </div>

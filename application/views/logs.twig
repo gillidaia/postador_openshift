@@ -1,0 +1,350 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}{{ l('Logs') }}{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title"><i class="fa fa-list-alt" aria-hidden="true"></i>
+			{{ l("logs") }}
+			<span class="TotalRecords">{{ l('Showing %s of %s ',perPage,total_posts) }}</span>
+		</h3>
+	</div>
+	<div class="panel-body">
+		<a href="{{ base_url('schedules/logs/clear?schedule_id=' ~ schedule_id) }}" title="Clear logs" class="btn btn-danger">
+			{{ l("Clear log") }}
+		</a>
+
+		{% if schedule_id is not empty %}
+			<input type="button" class="btn btn-primary updateInsight" value="{{ l("Update post insight") }}">
+		{% endif %}
+
+		<div class="table-responsive">
+			<table class="table table-bordered table-striped" id="datatable">
+				<thead>
+					<tr>
+						<td width="20px">
+			              <input type='checkbox' id="checkbox-all" class="check-all checkbox-style" name='a' />
+			              <label for="checkbox-all"></label>
+			            </td>
+						<td width="150">{{ l("Published on") }}</td>
+						<td>{{ l("Node") }}</td>
+						<td>{{ l("Node type") }}</td>
+						<td>{{ l("Post details") }}</td>
+					</tr>
+				</thead>
+				<tbody>
+					{% for log in logs %}
+
+						{% set fbr = json_decode(log.reactions,TRUE) %}
+
+						{% set cr = fbr['like']+fbr['love']+fbr['wow']+fbr['haha']+fbr['sad']+fbr['angry'] %}
+
+						{% set node_id = log.node_id %}
+
+						{% if log.node_id == "me" %}
+							{% set node_id = log.fb_account %}
+						{% endif %}
+
+						<tr>
+							 <td>
+		                      <input type='checkbox' class='checkbox checkbox-style' name='checkbox[]' id='checkbox-{{ log.id }}' data-fbpost="{%
+		                     if log.fb_post is not empty %}{{ node_id }}_{{ log.fb_post }}{% endif %}" value='{{ log.id }}' />
+		                      <label for='checkbox-{{ log.id }}'></label>
+		                    </td>
+							<td>{{ log.created_at|date(date_format ~ " H:i") }}</td>
+							<td>
+								<a href='https://facebook.com/{{ node_id }}' target="_blank">{{ log.node_name }}</a>
+							</td>
+							<td>{{ log.node_type|capitalize }}</td>
+							<td>
+								{% if log.fb_post is empty %}
+									<p class='log'>{{ l(log.content)|raw }}</p>
+								{% else %}
+									<a class="btn btn-primary" href="https://facebook.com/{{ log.fb_post }}" target="_banck" data-toggle='kp_tooltip' title='{{ l('View post on Facebook') }}'><i class="fa fa-external-link" aria-hidden="true"></i> {{ l('View post') }}</a>
+								
+									<button type="button" id="insight_{{ node_id }}_{{ log.fb_post }}" class="btn btn-primary viewInsight" data-toggle='kp_tooltip' title='{{ l('Click to view post insight') }}' value="{{ log.id }}">
+										<i class="fa fa-bar-chart" aria-hidden="true"></i>
+										<span class="badge">{{ log.share+log.comments+cr }}</span>
+									</button>
+
+									{#<button type="button" class="btn btn-danger" data-toggle='kp_tooltip' title="{{ l('Delete this post on Facebook') }}">
+										<i class="fa fa-trash" aria-hidden="true"></i>  {{ l('Delete') }}
+									</button>#}
+
+								{% endif %}
+								</a>
+							</td>
+						</tr>
+					{% else %}
+						
+			            <tr>
+			              <td colspan="5">
+			                {{ l('No records available') }}
+			              </td>
+			            </tr>
+      
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		{% if pagination %}
+	      {{ pagination|raw}}
+	    {% endif %}
+
+	</div>
+</div>
+
+<div id="postInsight" class="modal fade" role="dialog" data-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ l("Post insight") }}</h4>
+      </div>
+      <div class="modal-body">
+        
+		<div class="fb-reaction fb-like">
+			<span class="fb-icon"></span> 
+			<span class="count">0</span>
+		</div>
+
+		<div class="fb-reaction fb-love">
+			<span class="fb-icon"></span> 
+			<span class="count">0</span>
+		</div>
+
+		<div class="fb-reaction fb-wow">
+			<span class="fb-icon"></span> 
+			<span class="count">0</span>
+		</div>
+
+		<div class="fb-reaction fb-haha">
+			<span class="fb-icon"></span> 
+			<span class="count">0</span>
+		</div>
+
+		<div class="fb-reaction fb-sad">
+			<span class="fb-icon"></span> 
+			<span class="count">0</span>
+		</div>
+
+		<div class="fb-reaction fb-angry">
+			<span class="fb-icon"></span> 
+			<span class="count">0</span>
+		</div>
+	
+		<div class="fb-comments">
+			<span class="icon"></span>
+			<span class="count">0</span>
+		</div>
+
+		<div class="fb-shares">
+			<span class="icon"></span>
+			<span class="count">0</span>
+		</div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" data-dismiss="modal">{{ l("CLOSE") }}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts_footer %}
+	{{ parent() }}
+	<script>
+	$(".updateInsight").click(function(){
+		var posts = $('tbody .checkbox:checked');
+      	if(posts.length > 0){
+      		kp_preloader("on");
+      		$.ajax({
+		        url: '{{ base_url("facebook/get_access_token/" ~ schedule_id)  }}',
+		        dataType: 'json',
+		        type: 'post',
+		        contentType: 'application/x-www-form-urlencoded',
+		        data: { {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') },
+		        success: function( data, textStatus, jQxhr ){
+		          if(data.status == "success"){
+		          	kp_preloader("on");
+		          	var posts = $('tbody .checkbox:checked');
+		          	var totalPosts = posts.length > 50 ? 50 : posts.length;
+		            for (var i =  0; i < totalPosts; i++) {
+		            	if($(posts[i]).data("fbpost") != ""){
+		            		getPostInsight($(posts[i]).data("fbpost"),data.access_token);
+		            	}
+		  			}
+		  			kp_preloader("off");
+		          }else{
+		            if(data.message !== null && typeof data.message === 'object'){
+		                htmlData = "<ul>";
+		                Object.keys(data.message).forEach(function(key) {
+		                    htmlData += "<li>" + data.message[key] + "</li>";
+		                });
+		                htmlData += "</ul>";
+		            }else{
+		                htmlData = data.message;
+		            }
+		            alertBox(htmlData,"danger","",false);
+		          }
+		        },
+		        error: function( jqXhr, textStatus, errorThrown ){ 
+		          console.log(errorThrown);
+		          alertBox("{{ l('Unable to complete your request') }}","danger","",false);
+		        },
+		        complete: function() {
+		          kp_preloader("off");
+		        }
+		     	});
+
+	  		}else{
+	      		alertBox("{{ l('Select at least one post') }}","danger","",true,true);
+	      	}
+	});
+
+	function getPostInsight(object,token){
+
+		var fields = "reactions.type(LIKE).summary(total_count).limit(0).as(like),";
+		fields += "reactions.type(LOVE).summary(total_count).limit(0).as(love),";
+		fields += "reactions.type(WOW).summary(total_count).limit(0).as(wow),";
+		fields += "reactions.type(HAHA).summary(total_count).limit(0).as(haha),";
+		fields += "reactions.type(SAD).summary(total_count).limit(0).as(sad),";
+		fields += "reactions.type(ANGRY).summary(total_count).limit(0).as(angry),";
+		fields += "comments.limit(0).summary(true),";
+		fields += "sharedposts.limit(5000).summary(true)";
+
+		var res = $.ajax( "https://graph.facebook.com/v2.6/"+object+"/?fields="+fields+"&access_token="+token )
+		  .done(function(data){
+
+		  	var like = 0;
+		  	var love = 0;
+		  	var wow = 0;
+		  	var haha = 0;
+		  	var sad = 0;
+		  	var angry = 0;
+		  	var comments = 0;
+		  	var sharedposts = 0;
+
+		  	if(data.like.summary.total_count){
+		  		var like = data.like.summary.total_count;
+		  	}
+
+		  	if(data.love.summary.total_count){
+		  		var love = data.love.summary.total_count;
+		  	}
+
+		  	if(data.wow.summary.total_count){
+		  		var wow = data.wow.summary.total_count;
+		  	}
+		  	
+		  	if(data.haha.summary.total_count){
+		  		var haha = data.haha.summary.total_count;
+		  	}
+
+		  	if(data.sad.summary.total_count){
+		  		var sad = data.sad.summary.total_count;
+		  	}
+
+		  	if(data.angry.summary.total_count){
+				var angry = data.angry.summary.total_count;
+		  	}
+		  	
+		  	if(data.comments.summary && data.comments.summary.total_count){
+				var comments = data.comments.summary.total_count;
+		  	} else if (data.comments.count){
+		  		var comments = data.comments.count;
+		  	}
+
+		  	if(typeof data != "undefined" && data.sharedposts){
+	  			sharedposts += data.sharedposts.data.length;
+	  		}
+
+		  	$("#insight_"+object+" .badge").text(like+love+wow+haha+sad+angry+comments+sharedposts);
+
+		  	saveInsight(like,love,wow,haha,sad,angry,comments,sharedposts,object);
+
+		  })
+		  .fail(function(res){
+		  	console.log(res);
+		  });
+	}
+
+	function saveInsight(like,love,wow,haha,sad,angry,comments,sharedposts,post_id) {
+		$.ajax({
+	        url: '{{ base_url("schedules/logs/update/" ~ schedule_id)  }}',
+	        dataType: 'json',
+	        type: 'post',
+	        contentType: 'application/x-www-form-urlencoded',
+	        data: {
+	        	like: like,
+	        	love: love,
+	        	wow: wow,
+	        	haha: haha,
+	        	sad: sad,
+	        	angry: angry,
+	        	comments: comments,
+	        	sharedposts: sharedposts,
+	        	post_id: post_id,
+	        	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') },
+	        success: function( data, textStatus, jQxhr ){
+	        },
+	        error: function( jqXhr, textStatus, errorThrown ){ 
+	          console.log(errorThrown);
+	        },
+	        complete: function() {
+	        }
+	    });
+	}
+
+	$(".viewInsight").click(function(){
+		var logId = $(this).val();
+      	kp_preloader("on","#postInsight .modal-body");
+
+      	{# Reset modal values #}
+      	$(".fb-like .count","#postInsight").text(0);
+ 		$(".fb-love .count","#postInsight").text(0);
+ 		$(".fb-wow .count","#postInsight").text(0);
+ 		$(".fb-haha .count","#postInsight").text(0);
+ 		$(".fb-sad .count","#postInsight").text(0);
+ 		$(".fb-angry .count","#postInsight").text(0);
+ 		$(".fb-comments .count","#postInsight").text(0);
+ 		$(".fb-shares .count","#postInsight").text(0);
+
+      	$.ajax({
+	        url: '{{ base_url("schedules/logs/post_insight/") }}'+logId,
+	        dataType: 'json',
+	        type: 'post',
+	        contentType: 'application/x-www-form-urlencoded',
+	        data: {
+	          {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+	        },
+	        success: function( data, textStatus, jQxhr ){
+	         	if(data.status == "ok"){
+	         		$(".fb-like .count","#postInsight").text(data.insight.like);
+	         		$(".fb-love .count","#postInsight").text(data.insight.love);
+	         		$(".fb-wow .count","#postInsight").text(data.insight.wow);
+	         		$(".fb-haha .count","#postInsight").text(data.insight.haha);
+	         		$(".fb-sad .count","#postInsight").text(data.insight.sad);
+	         		$(".fb-angry .count","#postInsight").text(data.insight.angry);
+	         		$(".fb-comments .count","#postInsight").text(data.insight.comments);
+	         		$(".fb-shares .count","#postInsight").text(data.insight.shares);
+	         	}else{
+	           		alertBox(data.message,"danger","",false);
+	          	}
+	        },
+	        error: function( jqXhr, textStatus, errorThrown ){ 
+	          console.log(errorThrown);
+	          alertBox("{{ l('Unable to complete your request') }}","danger","",false);
+	        },
+	        complete: function() {
+	          kp_preloader("off","#postInsight .modal-body");
+	        }
+      	});
+		$('#postInsight').modal('show');
+	});
+
+	</script>
+{% endblock %}

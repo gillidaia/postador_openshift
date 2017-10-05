@@ -1,0 +1,60 @@
+{% extends "base.twig" %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link href="{{ assets('theme/default/css/public.css?v=' ~ assets_version) }}" rel="stylesheet" type="text/css" />
+  <link href="{{ assets('theme/default/css/theme_color.css?v=' ~ assets_version) }}" rel="stylesheet" type="text/css" />
+  <style>
+  	body{
+
+  		{% if app_settings['public_bg_image'] is not empty %}
+  		background-image: url({{ app_settings['public_bg_image'] }});
+  		{% endif %}
+
+  		{% if app_settings['public_bg_color'] is not empty %}
+  		background-color: #{{ app_settings['public_bg_color'] }};
+  		{% endif %}
+
+  	}
+  </style>
+{% endblock %}
+
+{% block head_js %}
+{% endblock %}
+
+{% block flash_bag %}
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+{% endblock %}
+
+{% block ads %}
+  {% if app_settings.ads_code_public_p == 1 %}
+    {{ parent() }}
+  {% endif %}
+{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block javascripts_footer %}
+  {{ parent() }}
+  <script src="{{ assets("theme/default/js/libs/particles.min.js?v=" ~ assets_version) }}"></script>
+  <script type="text/javascript">
+    particlesJS('particles-js',{"particles":{"number":{"value":100,"density":{"enable":true,"value_area":800}},"color":{"value":"#fff"},"shape":{"type":"circle",},"opacity":{"value":.3,"random":false,"anim":{"enable":false,"speed":1,"opacity_min":0.1,"sync":false}},"size":{"value":8,"random":true,"anim":{"enable":false,"speed":1,"size_min":0.5,"sync":false}},"line_linked":{"enable":true,"distance":150,"color":"#fff","opacity":.1,"width":1},"move":{"enable":true,"speed":1,"direction":"none","random":false,"straight":false,"out_mode":"bounce","attract":{"enable":false,"rotateX":600,"rotateY":1200}}},"interactivity":{"detect_on":"canvas","events":{"onhover":{"enable":false,"mode":"repulse"},"resize":true},"modes":{"grab":{"distance":400},"nasa":{"distance":400,"size":50,"duration":2,"opacity":8,"speed":1},"repulse":{"distance":200},"push":{"particles_nb":4},"remove":{"particles_nb":2}}},"retina_detect":true,});
+  </script>
+
+
+  <script type="text/javascript">
+  $(document).ready(function() {
+    $(".selectLang").on("change",function(){
+      var date = new Date();
+      date.setTime(date.getTime() + (7 * 24 * 60 * 60 *1000));
+      var expires = "; expires=" + date.toGMTString();
+      document.cookie = "{{ config_item('sess_cookie_name') }}_lang="+$(this).val()+";expires="+expires+";path=/";
+      location.reload();
+    });
+  });
+  </script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "install/base.twig" %}
+
+{% set page = 'Install' %}
+
+{% block title %}
+  Kingposter Installation
+{% endblock %}
+
+{% block mainContent %}
+  {{ form_open()}}
+  <div class="panel pv panel-default">
+      <div class="panel-heading">
+        <h4>Kingposter installation</h4>
+      </div>
+      <div class="panel-body">
+
+        {% if validation_errors() is not empty %}
+          <div class="alert alert-danger">
+                {{ validation_errors() }}
+            </div>
+        {% endif %} 
+
+        {% include "blocks/flash_bag.twig" %}
+
+        <div class="form-group">
+          {{ form_input(
+            {
+              'type':'text',
+              'name': 'username',
+              'id':'username',
+              'class':'form-control',
+              'placeholder':'Admin Username'
+            },
+            set_value('username'))
+          }}
+        </div>
+
+        <div class="form-group">
+          {{ form_input(
+            {
+              'type':'password',
+              'name': 'password',
+              'id':'username',
+              'class':'form-control',
+              'placeholder':'Admin Password'
+            })
+          }}
+        </div>
+
+        <div class="form-group">
+          {{ form_input(
+            {
+              'type':'password',
+              'name': 're_password',
+              'id':'password',
+              'class':'form-control',
+              'placeholder':'Re-enter Admin password'
+            })
+          }}
+        </div>
+
+        <div class="form-group">
+          {{ form_input(
+            {
+              'type':'email',
+              'name': 'email',
+              'id':'email',
+              'class':'form-control',
+              'placeholder':'Admin E-mail'
+            },
+            set_value('email'))
+          }}
+        </div>
+
+        <div class="form-group">
+          {{ form_input(
+            {
+              'type':'text',
+              'name': 'appname',
+              'id':'appname',
+              'class':'form-control',
+              'value': 'Kingposter',
+              'placeholder':'App name'
+            },
+            set_value('appname'))
+          }}
+        </div>
+
+        <input type="submit" name="verify" value="Install" class="btn btn-primary m-t-1 w-100 pull-right">
+      </div>
+    </div>
+  </form>
+{% endblock %}

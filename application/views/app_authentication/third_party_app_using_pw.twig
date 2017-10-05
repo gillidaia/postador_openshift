@@ -1,0 +1,79 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l("Facebook App authentication") }}
+{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+<div class="alertBox"></div>
+<input type="text" name="username" value="" placeholder="{{ l('FB username/email') }}" id="fb_username" class="form-control">
+<input type="password" name="password" value="" placeholder="{{ l('FB password') }}" id="fb_password" class="form-control">
+<button type="button" id="fb_login" class="btn btn-primary">{{ l('Generate token') }}</button>
+<p Class="text-danger"><small>{{ l('Your Facebook account password will NOT be stored we only use the password to generate a facebook token.') }}</small></p>
+<div class="token_result"></div>
+{% if validation_errors() is not empty %}
+<div class="alert alert-danger"> 
+    {{ validation_errors() }}
+</div>
+{% endif %}
+{{ form_open("Facebook/app_authentication/third_party/?app_id=" ~ input_get('app_id') ) }}
+<textarea name='access_token' rows='3' cols='100' id="accessToken" class="form-control" placeholder='{{ l('ENTER_ACCESS_TOKEN_HERE') }}'></textarea>
+<input type='submit' class='btn btn-primary' name='submit' value='{{ l('SET_ACCESS_TOKEN') }}'>
+</form>
+{% endblock %}
+
+{% block javascripts_footer %}
+	{{ parent() }}
+	<script>
+	$( document ).ready(function() {
+		$('#accessTokenURL').bind('input propertychange', function() {
+			var at = $(this).val().match(/"access_token":"(.*)(?=","machine_id)/);
+			if(at){$("#accessToken").val(at[1]);}
+		});
+
+		$("#fb_login").click(function(){
+				$('.alertBox').html("");
+				$.ajax({
+					url: '{{ base_url("facebook/generate_token/" ~ app.row('appid')) }}',
+					dataType: 'json',
+					type: 'post',
+					contentType: 'application/x-www-form-urlencoded',
+					data: {
+						username: $('#fb_username').val(), 
+						password: $('#fb_password').val(),
+						{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+					},
+					success: function( data, textStatus, jQxhr ){
+					  if(data.status == "ok"){
+					    $(".token_result").html("<iframe width='100%' height='100' src='"+data.fb_url+"'></iframe>");
+					  }else{
+					  	if(data.message !== null && typeof data.message === 'object'){ 
+		                	htmlData = "<ul>";
+		                    Object.keys(data.message).forEach(function(key) {
+		                      htmlData += "<li>" + data.message[key] + "</li>";
+		                      });
+		                    htmlData += "</ul>";
+		               	}else{
+		                    htmlData = data.message;
+		            	}
+					    alertBox(htmlData,'danger','.alertBox',false,true,false);
+					  }
+					},
+					error: function( jqXhr, textStatus, errorThrown ){ 
+					  console.log(errorThrown);
+					  alertBox('{{ l("Failed to generate Facebook token, try again") }}','danger','.alertBox',true);
+					},
+			        complete: function() {
+			          // Re-enable send btn
+			          $("#addFbAccountBtn").prop('disabled', false);
+			          kp_preloader("off","#addNewFbAccount .modal-body");
+			        }
+				});
+			});
+	});
+</script>
+{% endblock %}

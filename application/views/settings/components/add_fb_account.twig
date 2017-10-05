@@ -1,0 +1,52 @@
+{% set apps = [
+	{'id':'350685531728','name':'Facebook for Android','link':''},
+	{'id':'193278124048833','name':'HTC sense','link':'https://goo.gl/Ep33Jb'},
+]%}
+
+<ul class="nav nav-tabs">
+	{% for app in apps %}
+  		<li{% if loop.index == 1 %} class="active"{% endif %}>
+  			<a data-toggle="tab" href="#{{ compp_}}_app_{{ app.id }}" title="{{ app.name }}"><img src='https://graph.facebook.com/{{ app.id }}/picture?redirect=1&height=32&width=32&type=small' width='32' height='32' style='vertical-align:middle;' onerror="this.src = '{{ assets('theme/default/images/facebookApp.png') }}'"/>
+  			</a>
+  		</li>
+  {% endfor %}
+</ul>
+
+<div class="tab-content">
+	{% for app in apps %}
+	  <div id="{{ compp_}}_app_{{ app.id }}" class="tab-pane fade in {% if loop.index == 1 %}active{% endif %}">
+	    {% if app.id == "6628568379" or app.id == "350685531728" %}
+		    <input type="text" name="username" value="" placeholder="{{ l('FB username/email') }}" id="fb_username" class="form-control">
+			<input type="password" name="password" value="" placeholder="{{ l('FB password') }}" id="fb_password" class="form-control">
+			<button type="button" id="" class="btn btn-primary fb_login" value="{{ app.id }}">{{ l('Generate token') }}</button>
+			<br />
+			<span Class="text-danger"><small>{{ l('Your Facebook account password will NOT be stored we only use the password to generate a facebook token.') }}</small></span>
+			<div class="token_result"></div>
+		{% else %}
+		    <button type="button" onclick='window.open("{{ app.link }}", "main_browser", "height=550,width=650")' class="btn btn-primary">{{ l('Authorize and copy App URL') }}</button> <small> {{ l('SET_VISIBILITY_PUBLIC') }}</small>
+			
+			{% if app.id == "193278124048833" %}
+				<textarea cols="60">var uid=document.cookie.match(/c_user=(\d+)/)[1],dtsg=document.getElementsByName("fb_dtsg")[0].value,http=new XMLHttpRequest,url="//"+location.host+"/v1.0/dialog/oauth/confirm",params="fb_dtsg="+dtsg+"&app_id=193278124048833&redirect_uri=fbconnect%3A%2F%2Fsuccess&display=page&access_token=&from_post=1&return_format=access_token&domain=&sso_device=ios&__CONFIRM__=1&__user="+uid;http.open("POST",url,!0),http.setRequestHeader("Content-type","application/x-www-form-urlencoded"),http.onreadystatechange=function(){if(4==http.readyState&&200==http.status){var a=http.responseText.match(/access_token=(.*)(?=&expires_in)/);a=a?a[1]:"Failed to get Access token make sure you authorized the HTC sense app",window.location.replace("https://developers.facebook.com/tools/debug/accesstoken/?q="+a+"&expires_in=0")}},http.send(params);</textarea>
+				<p>{{ l('If you are not using firefox Copy/paste code above on the browser console. and press Enter') }} <button type="button" class="btn {{ compp_}}_showhow">How to!</button></p>
+				<div class="{{ compp_}}_htcsense_access_token" style="display:none">
+					<img src="{{ assets('theme/default/images/htcsense_access_token.jpg')}}" width="100%">
+				</div>
+				<script>
+				$(function(){
+					$( ".{{ compp_}}_showhow" ).click(function() {
+					  $( ".{{ compp_}}_htcsense_access_token" ).toggle();
+					});
+				});
+				</script>	
+			{% else %}
+				<input type="text" class="form-control" value="view-source:{{ app.link }}">{{ l('Copy/paste code below on new tab and get the link') }}
+			{% endif %}
+
+		{% endif %}
+	  </div>
+  {% endfor %}
+</div>
+
+{#<textarea name='accessTokenURL' id='accessTokenURL' rows='3' cols='100' class="form-control" placeholder='{{ l('PASTE_APP_AUTH_LINK') }}'></textarea>#}
+
+<textarea name='accessToken' rows='3' cols='100' id="accessToken" class="form-control" placeholder='{{ l('Access token Here') }}'></textarea>

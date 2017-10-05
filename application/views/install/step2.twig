@@ -1,0 +1,31 @@
+{% extends "install/base.twig" %}
+
+{% set page = 'Install' %}
+
+{% block title %}
+  Kingposter Installation
+{% endblock %}
+
+
+{% block mainContent %}
+	{{ form_open()}}
+	<div class="panel pv panel-default">
+      <div class="panel-heading">
+      	<h4>Product Verification</h4>
+      </div>
+      <div class="panel-body">
+        {% if validation_errors() is not empty %}
+          <div class="alert alert-danger">
+                {{ validation_errors() }}
+            </div>
+        {% endif %} 
+        {% include "blocks/flash_bag.twig" %}
+      	<p class="m-a-0">Please Enter your purchase code to continue</p>
+		    <span><a href="https://help.market.envato.com/hc/en-us/articles/202822600-Where-Is-My-Purchase-Code-" target="_blank">How to find my purchase code?</a></span>
+      	<input type="text" class="form-control m-t-1" name="purchaseCode" value="" placeholder="Enter your purchase code">
+        <br />
+      	<input type="submit" name="verify" value="Verify" class="btn btn-primary m-t-1 w-100 pull-right">
+      </div>
+  	</div>
+	</form>
+{% endblock %}

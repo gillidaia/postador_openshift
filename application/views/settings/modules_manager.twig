@@ -1,0 +1,146 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l('Modules manager') }}
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link href="{{ assets('theme/default/bootstrap/css/bootstrap-4.min.css?v=' ~ assets_version) }}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+	{{ parent() }}
+{{ form_open() }}
+<div class="settings">
+	<div class="row ">
+		<div class="tabbable tabs-left">
+			<div class="col-xs-12 col-sm-3 settingsTabs">
+				{% set current_page = 'modules_manager' %}
+				{% include "settings/tabs.twig" %}
+			</div>
+			<div class="col-xs-12 col-sm-9 settingsContent">
+				<div class="row tab-content">
+					<div class="col-xs-12">
+						<h4 class="tab-title"><i class="fa fa-user"></i>  {{ l('Modules manager') }}</h4>
+					</div>
+					<div class="col-xs-12">
+						<div class="msgBox"></div>
+						<div class="card-deck modulesList"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</form>
+{% endblock %}
+
+{% block javascripts_footer %}
+    {{ parent() }}
+    <script type="text/javascript">
+    $(function(){
+    	kp_preloader("on",".modulesList");
+    	$.ajax({
+			url: '{{ base_url("settings/modules_manager/available_modules") }}',
+			dataType: 'json',
+			type: 'GET',
+			contentType: 'application/x-www-form-urlencoded',
+			success: function( data, textStatus, jQxhr ){
+				if(data.status == "ok"){
+					var htmlData = "";
+					Object.keys(data.modules).forEach(function(key) {
+                 		htmlData +=  bindModule(data.modules[key]);
+                  	});
+                  	$(".modulesList").html(htmlData);
+				}else{
+					$(".modulesList").html("No modules available!");
+				}
+			},
+			error: function( jqXhr, textStatus, errorThrown ){ 
+			  console.log(errorThrown);
+			},
+			complete: function(){
+				kp_preloader("off",".modulesList");
+			}
+		});
+	});
+
+    function toggleModule(active,module) {
+    	kp_preloader("on",".modulesList");
+    	module = $(module);
+    	$.ajax({
+			url: '{{ base_url("settings/modules_manager/") }}'+active,
+			dataType: 'json',
+			type: 'POST',
+			data: { 
+		      	module: module.val(),
+		      	{{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+		    },
+			contentType: 'application/x-www-form-urlencoded',
+			success: function( data, textStatus, jQxhr ){
+				if(data.status == "ok"){
+					alertBox(data.message,"success",".msgBox",true,true);
+					if(data.m_status == 'active'){
+						module.html("{{l('Disable')}}");
+						module.attr("onclick",'toggleModule("disable",this)');
+						module.addClass("btn-primary");
+						module.removeClass("btn-default");
+
+						// Access the update page
+						window.open('{{base_url("update")}}', '_blank');
+					}else{
+						module.html("{{l('Active')}}");
+						module.attr("onclick",'toggleModule("active",this)');
+						module.addClass("btn-default");
+						module.removeClass("btn-primary");
+					}
+				}else{
+					alertBox(data.message,"danger",".msgBox",true,true);
+				}
+			},
+			error: function( jqXhr, textStatus, errorThrown ){ 
+			  console.log(errorThrown);
+			},
+			complete: function(){
+				kp_preloader("off",".modulesList");
+			}
+		});
+    }
+
+	function bindModule(module) {
+
+		var price = module.price == 0 ? "Free" : "$"+module.price;
+    				
+		var m = "<div class='card'>";
+	    	m += "<a href='"+module.link+"' target='_blank'><img class='card-img-top' src='{{ assets('theme/default/images/kp_module.png') }}' alt='Card image cap'></a>";
+	   		m += "<div class='card-block'>";
+	    	m += "<span class='badge price badge-success'>"+price+"</span>";
+	    	m += "<h4 class='card-title'><a href='"+module.link+"' target='_blank'>"+module.title+"</a>";
+	    	if(module.update == 1){
+      			m += " <small class='badge'>New update available</small>";
+      		}
+	    	m += "</h4>";
+	    	m += "<p class='card-text'>"+module.description+"</p>";
+	   		m += "<h6>";
+	   		m += "<small>Author : "+module.author+"<br />";
+	   		m += "Version : "+module.version+"</small>";
+	   		m += "</h6>";
+
+	    	m += "</div>";
+	   		m += "<div class='card-footer'>";
+
+      		if(module.status == 'active'){
+      			m += "<button type='button' class='btn btn-primary pull-right' onclick='toggleModule(\"disable\",this)' value='"+module.name+"'>{{l('Disable')}}</button>";
+      		}else if(module.status == 'inactive'){
+      			m += "<button type='button' class='btn btn-default pull-right' onclick='toggleModule(\"active\",this)' value='"+module.name+"'>{{l('Active')}}</button>";
+      		}else{
+      			m += "<a href='"+module.link+"' class='btn btn-success pull-right' target='_blank'>Get it Now for "+price+"</a>";
+      		}
+
+	    m += "</div></div>";
+
+	    return m;
+	}
+    </script>
+{% endblock %}

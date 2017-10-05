@@ -1,0 +1,94 @@
+<ul class="nav nav-tabs">
+	<li class='{% if current_page == 'user_settings' %}active{% endif %}'>
+		<a href='{{ base_url('settings') }}' >
+			<i class='fa fa-fw fa-user'></i>
+			<span class="hidden-xs">{{ l('Profile') }}</span>
+		</a>
+	</li>
+
+	<li class='{% if current_page == 'general_settings' %}active{% endif %}'>
+		<a href='{{ base_url('settings/general_settings') }}' >
+			<i class='fa fa-fw fa-tasks'></i>
+			<span class="hidden-xs">{{ l('General settings') }}</span>
+		</a>
+	</li>
+
+	<li class='{% if current_page == 'publish_settings' %}active{% endif %}'>
+		<a href='{{ base_url('settings/publish_settings') }}' >
+			<i class='fa fa-fw fa-clipboard'></i>
+			<span class="hidden-xs">{{ l('Publish settings') }}</span>
+		</a>
+	</li>
+
+	<li class='{% if current_page == 'fb_accounts' %}active{% endif %}'>
+		<a href='{{ base_url('settings/fb_accounts') }}' >
+			<i class='fa fa-fw fa-facebook'></i>
+			<span class="hidden-xs">{{ l('Facebook accounts') }}</span>
+		</a>
+	</li>
+
+	<li class='{% if current_page == 'fbapps' %}active{% endif %}'>
+		<a href='{{ base_url('settings/fbapps') }}' >
+			<i class='fa fa-fw fa-plug'></i>
+			<span class="hidden-xs">{{ l('Facebook Apps') }}</span>
+		</a>
+	</li>
+
+	{% if user.hasPermission('admin') == true %}
+		<li class='{% if current_page == 'app_settings' %}active{% endif %}'>
+			<a href='{{ base_url('settings/app_settings') }}' ><i class='fa fa-fw fa-cogs'></i> 
+				<span class="hidden-xs">{{ l('App settings') }}</span>
+			</a>
+
+			{% if current_page == 'app_settings' %}
+			<ul class="sub-menu hidden-xs">
+                <li>
+                	<a data-toggle="collapse" data-parent="#accordion" href="{{ base_url('settings/app_settings#general') }}">
+	    				<i class="fa fa-cog"></i>
+	    				<span class="hidden-xs">{{ l("General")}}</span>
+	    			</a>
+	    		</li>
+				<li>
+					<a data-toggle="collapse" data-parent="#accordion" href="{{ base_url('settings/app_settings#publish_settings') }}">
+    					<i class="fa fa-fw fa-clipboard" aria-hidden="true"></i> 
+						<span class="hidden-xs">{{ l('Publish settings') }}</span>
+					</a>
+				</li>
+				<li>
+					<a data-toggle="collapse" data-parent="#accordion" href="{{ base_url('settings/app_settings#theme_settings') }}">
+					    <i class="fa fa-fw fa-paint-brush" aria-hidden="true"></i> 
+						<span class="hidden-xs">{{ l('Theme settings') }}</span>
+					</a>
+				</li>
+				<li>
+					<a data-toggle="collapse" data-parent="#accordion" href="{{ base_url('settings/app_settings#social_login') }}">
+					    <i class="fa fa-facebook fa-fw" aria-hidden="true"></i> 
+						<span class="hidden-xs">{{ l('Social login') }}</span>
+					</a>
+				</li>
+				<li>
+					<a data-toggle="collapse" data-parent="#accordion" href="{{ base_url('settings/app_settings#advanced_settings') }}">
+					    <i class="fa fa-fw fa-cogs" aria-hidden="true"></i> 
+						<span class="hidden-xs">{{ l('Advanced settings') }}</span>
+					</a>
+				</li>
+            </ul>
+            {% endif %}
+
+		</li>
+		<li class='{% if current_page == 'roles' %}active{% endif %}'>
+			<a href='{{ base_url('settings/roles') }}' >
+				<i class='fa fa-fw fa-users'></i>
+				<span class="hidden-xs">{{ l('Roles') }}</span>
+			</a>
+		</li>
+		<li class='{% if current_page == 'modules_manager' %}active{% endif %}'>
+			<a href='{{ base_url('settings/modules_manager') }}' >
+				<i class="fa fa-th-large" aria-hidden="true"></i>
+				<span class="hidden-xs">{{ l('Modules manager') }}</span>
+			</a>
+		</li>
+	{% endif %}
+
+</ul>
+{% include "blocks/ads.twig" %}

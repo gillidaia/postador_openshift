@@ -1,0 +1,68 @@
+<div class="panel panel-default">
+<div class="panel-heading">
+  <h4 class="panel-title">
+    <a data-toggle="collapse" data-parent="#accordion" href="#advanced_settings">
+    <i class="fa fa-fw fa-cogs" aria-hidden="true"></i> 
+	<span>{{ l('Advanced settings') }}</span></a>
+  </h4>
+</div>
+<div id="advanced_settings" class="panel-collapse collapse">
+	<div class="panel-body">
+		<div class="input-group">
+			<label for="ads_code">{{ l('Ads banner') }} <small>( {{ l("Responsive ADS code") }} )</small></label>
+			<textarea name="ads_code" class="form-control" id="ads_code" placeholder="{{ l('Responsive ADS code') }}" >{{ unescape(app_settings["ads_code"])|raw }}</textarea> 
+		</div>
+
+		{% if input_post("ads_code_public_p") is not empty %}
+			{% set ads_code_public_p = input_post("ads_code_public_p") == 'on' ? "checked" : "" %}
+		{% else %}
+			{% set ads_code_public_p = app_settings["ads_code_public_p"] == 1 ? "checked" : "" %}
+		{% endif %}
+
+		<div class="input-group">
+			<input type="checkbox" class='checkbox-style' id="ads_code_public_p" name="ads_code_public_p" aria-label="Users can register" {{ ads_code_public_p }} />
+			<label for="ads_code_public_p"></label>
+			<label for="ads_code_public_p">
+			<span class="input-text">{{ l('Display Ads on public pages') }}</span></label>
+		</div>
+
+		<div class="input-group">
+			<label for="head_js">{{ l('Head javascript') }} <small>( You can use this field to inject Javascript code on the head of the page, This code will be available on all pages (Only javascript code without js tag) )</small></label>
+			<span class='text-danger'>This field is for advanced users only, make sure your javascript code dose not contain any errors</span>
+			<textarea name="head_js" class="form-control" id="head_js" placeholder="{{ l('Head js') }}" >{{ unescape(app_settings["head_js"])|raw }}</textarea> 
+		</div>
+
+		<div class="input-group">
+			<label for="footer_js">{{ l('Footer javascript') }} <small>( You can use this field to inject Javascript code on the footer of the page, This code will be available on all pages (Only javascript code without js tag )</small></label>
+			<span class='text-danger'>This field is for advanced users only, make sure your javascript code dose not contain any errors</span>
+			<textarea name="footer_js" class="form-control" id="footer_js" placeholder="{{ l('Footer js') }}" >{{ unescape(app_settings["footer_js"])|raw }}</textarea> 
+		</div>
+
+		<div class="input-group">
+			{% if input_post("maintenance_mode") is not empty %}
+				{% set maintenance_mode = input_post("maintenance_mode") == 'on' ? "checked" : "" %}
+			{% else %}
+				{% set maintenance_mode = app_settings["maintenance_mode"] == 1 ? "checked" : "" %}
+			{% endif %}
+			<input type="checkbox" id="maintenance_mode" name="maintenance_mode"  class='checkbox-style' aria-label="New users must confirm their email address" {{ maintenance_mode }}/>
+			<label for="maintenance_mode" ></label>
+			<span class="input-text">{{ l('Active Maintenance Mode') }}</span>
+		</div>
+
+		<input type="submit" name="save" value="{{ l('SAVE_CHANGES') }}" class="btn btn-primary" />
+
+		<h4 class="tab-title"><i class="fa fa-cogs"></i> {{ l('App Cache') }} <a href="#"  onclick="return false;" data-toggle="kp_tooltip" data-placement="top" title="{{ l('If you made any change to the templates files (.twig files) you need to clear the cache in order to see the changes you made') }}"><i class="fa fa-question-circle" aria-hidden="true"></i></a></h4>
+		<div class="input-group">
+			<button type="button" class="btn btn-danger" id="clearCache">
+				<span class="clearCacheIcon">
+					<i class="fa fa-refresh fa-spin fa-fw"></i>
+					<span class="sr-only">Loading...</span>
+				</span>
+				{{ l('Clear the cache') }}
+			</button>
+			<span class="clearMessage"></span>
+		</div>
+	</div>
+</div>
+</div>
+</div>

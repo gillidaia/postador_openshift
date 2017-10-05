@@ -1,0 +1,531 @@
+{% extends "base_dashboard.twig" %}
+
+{% block title %}
+	{{ l("Schedules") }}
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+<div class="messageBox"></div>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">
+      <i class="fa fa-calendar" aria-hidden="true"></i> {{ l("Scheduled posts") }}
+      <span class="TotalRecords">{{ l('Showing %s of %s ',perPage,total_posts) }}</span>
+    </h3>
+  </div>
+  <div class="panel-body has-responsive-table">
+    <form method="POST">
+      
+      <button type="button" class="btn btn-danger" id="deleteScheduleBtn">
+        <i class="fa fa-trash fa-fw" aria-hidden="true"></i>
+        {{ lang.s('Delete') }}
+      </button>
+
+      <table class="table table-bordered table-striped dataTable" id="datatable" width="100%">
+        <thead>
+          <tr>
+            <td>
+              <input type='checkbox' id="checkbox-all" class="check-all checkbox-style" name='a' />
+              <label for="checkbox-all"></label>
+            </td>
+            <td class="hidden-lg">{{ l("Details") }}</td>
+            <td class="hidden-xs hidden-sm">{{ l("NEXT_POSTING_TIME") }}</td>
+            <td class="visible-lg">{{ l("POST_INTERVAL") }}</td>
+            <td class="hidden-xs hidden-sm">{{ l("POST") }}</td>
+            <td class="visible-lg">{{ l("FB_APP") }}</td>
+            <td>{{ l("FB_ACCOUNT") }}</td>
+            <td>{{ l('STATUS') }}</td>
+            <td></td>
+          </tr>
+        </thead>
+        <tbody>
+              {% for sp in schedulesList %}
+                {% set fba = fbaccount.get(sp.fb_account) %}
+                {% set nextRepeat = l('Stoped') %}
+                {% if sp.repeat_every != 0 %}
+                  {% set nextRepeat = sp.repeated_at|date(date_format) %}
+                  {# {% set nextRepeat->modify('+'.$sp->repeat_every.' day'); #}
+                  {# set nextRepeat = nextRepeat->format("Y-m-d H:i"); #}
+                {% endif %}
+                
+                {% set ap = json_decode(sp.auto_pause) %}
+
+                {% set autoPause = "" %}
+                {% if ap.pause != null and ap.pause != 0 %}
+                  {% set autoPause = l('Auto pause after') ~ " : " ~ ap.pause ~ " posts\n" ~ l('Resume after') ~ " : " %}
+
+                  {% if ap.resume > 90 %}
+                    {% set autoPause = autoPause ~ ap.resume/60 ~ " " ~ l('Hours') %}
+                  {% else %}
+                    {% set autoPause = autoPause ~ ap.resume ~ " " ~ l('Minutes') %}
+                  {% endif %}
+                  
+                {% endif %}
+                  
+                  {% set stat = sp.pause == "0" ? "1" : "0" %}
+                  {% set pauseBtn = sp.pause == "0" ? "primary" : "warning" %}
+                  {% set pauseBtnIcon = sp.pause == "0" ? "pause" : "play" %}
+
+                  <tr>
+                    <td>
+                      <input type='checkbox' class='checkbox checkbox-style' name='checkbox[]' id='checkbox-{{ sp.id }}' value='{{ sp.id }}' />
+                      <label for='checkbox-{{ sp.id }}'></label>
+                    </td>
+                    
+                    <td class="hidden-lg">
+                      <button type="button" class="btn btn-default toggleRowData">+</button>
+                    </td>
+                    
+                    <td class="hidden-xs hidden-sm">
+                      {{ sp.next_post_time|date(date_format ~ " H:i") }}
+                    </td>
+                    
+                    <td class="visible-lg">{{ sp.post_interval }} {{ l('Min') }}</td>
+                    
+                    <td  class="hidden-xs hidden-sm">
+                      {% if sp.post_title is empty %}
+                        <span class="text-danger">{{ l('Not found') }}</span>
+                      {% else %}
+                         <a href="{{ base_url('/?post_id=' ~ sp.post_id) }}">{{ sp.post_title }}</a>
+                      {% endif %}
+                    </td>
+                    
+                    <td class="visible-lg">
+                      {% if sp.app_name is empty %}
+                        <span class="text-danger">{{ l('Not found') }}</span>
+                      {% else %}
+                        {{ sp.app_name }}
+                      {% endif %}
+                    </td>
+                
+                    <td>
+                      {% if sp.firstname is empty %}
+                        <span class="text-danger">{{ l('Not found') }}</span>
+                      {% else %}
+                        <a href="https://facebook.com/{{ sp.fb_account }}" target="_blank">
+                          <img src='https://graph.facebook.com/{{ sp.fb_account }}/picture?redirect=1&height=40&width=40&type=normal' width='32' height='32' style='float: left' class="fbProfileImg" /> <span class="hidden-xs fbProfileName">&nbsp;{{ sp.firstname }} {{ sp.lastname }}</span></a>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      {% if sp.status == "1" %}
+                        <span class='btn btn-success'>
+                        	<span class="visible-lg">{{ l('COMPLETED') }} ({{ sp.total_targets }}/{{ sp.total_targets }})</span>
+                          <span class="hidden-lg">({{ sp.total_targets }}/{{ sp.total_targets }})</span> 
+                        </span>
+                      {% else %}
+                        <span class='btn btn-default'>
+                        	<span class="visible-lg">{{ l('inProgress') }} {{ sp.next_target }}/{{ sp.total_targets }}</span>
+                        	<span class="hidden-lg">{{ l('inProgress') }} {{ sp.next_target }}/{{ sp.total_targets }}</span>
+                        </span>
+                      {% endif %}
+                      {% if autoPause is not empty %}
+                        <a href='#'  onclick='return false;' data-toggle='kp_tooltip' data-placement='top' title='{{ autoPause }}'><span class='fa fa-question-circle'></span></a>
+                      {% endif %}
+                    </td>
+
+                    <td>
+
+                      <button type='button' title='{{ l('Edit') }}' data-toggle='kp_tooltip' data-placement='top' class='btn btn-primary editSchedule' value='{{ sp.id }}' >
+                      <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                      </button>
+                      
+                      {% if sp.pause == 1 %}
+                        <button type="button" class="btn btn-warning togglePauseBtn" value="{{ sp.id }}"><i class="fa fa-play" aria-hidden="true"></i></button>
+                      {% else %}
+                        <button type="button" class="btn btn-primary togglePauseBtn" value="{{ sp.id }}"><i class="fa fa-pause" aria-hidden="true"></i></button>
+                      {% endif %}
+                      
+                       <a href='{{ base_url('schedules/logs/index/' ~ sp.id ) }}' title='{{ l('VIEW_LOG') }}' class='btn btn-primary'>
+                        <i class="fa fa-folder-open" aria-hidden="true"></i>
+                      </a>
+
+                      {% if user.canUse("comments") and kpModules.auto_comment is defined %}
+                        <button type="button" title='{{ l('Auto comment') }}' data-toggle='kp_tooltip' class="btn btn-primary AddAutoComment"value="{{ sp.id }}"><i class="fa fa-commenting" aria-hidden="true"></i></button>
+                      {% endif %}
+
+                      {% if user.canUse("likes") and kpModules.auto_like is defined %}
+                        <button type="button" title='{{ l('Auto like') }}' data-toggle='kp_tooltip' class="btn btn-primary AddAutoLike"value="{{ sp.id }}"><i class="fa fa-thumbs-up" aria-hidden="true"></i></button>
+                      {% endif %}
+
+                    </td>
+                  </tr>
+                  <tr class="hidden-lg rowData" style="display:none">
+                  	<td></td>
+                  	<td colspan="8">
+                  		
+                        <div class="visible-xs visible-sm">{{ l("NEXT_POSTING_TIME") }} : {{ sp.next_post_time|date(date_format ~ " H:i") }}</div>
+                        
+                        <div class="visible-xs visible-sm">{{ l("Post") }} : 
+                          {% if sp.post_title is empty %}
+                            <span class="text-danger">{{ l('Not found') }}</span>
+                          {% else %}
+                             <a href="{{ base_url('/?post_id=' ~ sp.post_id) }}">{{ sp.post_title }}</a>
+                          {% endif %}
+                        </div>
+
+                  			<div>{{ l("FB_APP") }} : 
+                  				{% if sp.app_name is empty %}
+			                        <span class="text-danger">{{ l('Not found') }}</span>
+			                    {% else %}
+			                        {{ sp.app_name }}
+			                    {% endif %}
+                        </div>
+
+                        <div>{{ l("POST_INTERVAL") }} : {{ sp.post_interval }} {{ l('Min') }}</div>
+
+                        {% if ap.pause != null and ap.pause != 0 %}
+                          <div>
+                            {{ l('Auto pause after') }} : {{ ap.pause }} {{ l('Posts') }}
+                          </div>
+                          <div>
+                            {{ l('Resume after') }} : {{ ap.resume }} {{ l('Minutes') }}
+                          </div>
+                        {% endif %}
+
+                  	</td>
+                  </tr>
+          {% else %}
+            <tr>
+              <td colspan="9">
+                {{ l('No records available') }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if pagination %}
+        {{ pagination|raw}}
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<div id="editSchedule" class="modal fade" role="dialog" data-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ l("Edit schedule") }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="messageBox"></div>
+        <input type="hidden" name="ScheduleId" id="ScheduleId" value="">
+        {% include "schedule_posts/schedule_block.twig" %}
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" data-dismiss="modal">{{ l("CLOSE") }}</a>
+        <button id="editScheduleBtn" class="btn btn-primary">{{ l("SAVE") }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Box variables #}
+{% set box_id = "schedule" %}
+{% set delete_msg = l("Are you sure you want to delete the selected records?")~", "~ l("This action will delete all the schedule related data") ~ ", " ~ l("This action cannot be undone") %}
+{% include "blocks/delete_modal.twig" %}
+
+{% if user.canUse("comments") and kpModules.auto_comment is defined %}
+  {% include "@comments/components/addAutoComment.twig" %}
+  {% include "@comments/components/editAutoComment.twig" %}
+{% endif %}
+
+{% if user.canUse("likes") and kpModules.auto_like is defined %}
+  {% include "@autolike/components/addAutoLike.twig" %}
+{% endif %}
+
+{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link href="{{ assets('theme/default/css/bootstrap-datetimepicker.min.css') }}" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="{{ assets('theme/default/css/emojionearea.min.css') }}">
+{% endblock %}
+
+{% block javascripts_footer %}
+  {{ parent() }}
+  <script src="{{ assets('theme/default/js/libs/moment.min.js') }}"></script>
+  <script src="{{ assets('theme/default/js/libs/bootstrap-datetimepicker.min.js') }}"></script>
+  
+  <script>
+
+    $(function () {
+      $('#scheduledPostTime').datetimepicker({format: '{{ date_format_js }} HH:mm'});
+      $('#start_on').datetimepicker({format: '{{ date_format_js }} HH:mm'});
+      $('#end_on').datetimepicker({format: '{{ date_format_js }} HH:mm'});
+
+      $( ".toggleRowData" ).click(function() {
+        $( this ).parent().parent().next().stop().toggle( "fast" );
+      });
+
+    });
+
+    {# If repeat once disbale repeat at #}
+    $( "#repeatEvery" ).change(function() {
+      if($(this).val() == 0){
+        $("#start_on").prop('disabled', true);
+        $("#end_on").prop('disabled', true);
+      }else{
+         $("#start_on").prop('disabled', false);
+         $("#end_on").prop('disabled', false);
+      }
+    });
+
+    $( "#schedulePauseAfter" ).change(function() {
+      if($(this).val() == 0){
+        $("#scheduleResumeAfter").prop('disabled', true);
+      }else{
+         $("#scheduleResumeAfter").prop('disabled', false);
+      }
+    });
+
+    {# ----------------------- Edit the schedule ---------------------- #}
+    $(".editSchedule").click(function(){
+
+      // Reset the modal
+      $("#editSchedule .messageBox").html("");
+
+      $("#scheduledPostInterval").val("");
+
+      $("#scheduledPostTime").val("");
+      $("#schedulePauseAfter").val("");
+      $("#scheduleResumeAfter").val("");
+
+      $("#repeatEvery").val("");
+
+      $("#start_on").val("");
+      $("#end_on").val("");
+
+      $("#scheduledPostApp").html("");
+
+      var scheduleID = $(this).val();
+      $('#ScheduleId').val(scheduleID);
+
+      kp_preloader("on","#editSchedule .modal-body");
+
+      // Disable save schedule post
+      $("#editScheduleBtn").prop('disabled', true);
+
+      // Load schedule info
+      $.ajax({
+        url: '{{ base_url("schedules/action/details/") }}'+scheduleID,
+        dataType: 'json',
+        type: 'post',
+        contentType: 'application/x-www-form-urlencoded',
+        data: {
+          {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+        },
+        success: function( data, textStatus, jQxhr ){
+          if(data.status == "ok"){
+
+            // bind values
+            var next_post_time = new Date(data.schedule.next_post_time);
+            $("#scheduledPostTime").val(moment(next_post_time).format('{{ date_format_js }} HH:mm'));
+
+            if(data.schedule.post_interval > 90){
+              $("#intervalHour").prop("checked", true);
+              $("#scheduledPostInterval").val(data.schedule.post_interval/60);
+            }else{
+              $("#intervalMunite").prop("checked", true);
+              $("#scheduledPostInterval").val(data.schedule.post_interval);
+            }
+
+            $("#schedulePauseAfter").val(data.schedule.auto_pause.pause);
+
+            $("#repeatEvery").val(data.schedule.repeat_every);
+
+            if($("#repeatEvery").val() == 0){
+              $("#start_on").prop('disabled', true);
+              $("#end_on").prop('disabled', true);
+            }else{
+               $("#start_on").prop('disabled', false);
+               $("#end_on").prop('disabled', false);
+               var start_on = new Date(data.schedule.start_on);
+               var end_on = new Date(data.schedule.end_on);
+              $("#start_on").val(moment(start_on).format('{{ date_format_js }} HH:mm'));
+              $("#end_on").val(moment(end_on).format('{{ date_format_js }} HH:mm'));
+            }
+
+            if($("#schedulePauseAfter").val() == 0){
+              $("#scheduleResumeAfter").prop('disabled', true);
+            }else{
+               $("#scheduleResumeAfter").prop('disabled', false);
+               if(data.schedule.auto_pause.resume > 90){
+                $("#rfintervalHour").prop("checked", true);
+                $("#scheduleResumeAfter").val(data.schedule.auto_pause.resume/60);
+              }else{
+                $("#rfintervalMunite").prop("checked", true);
+                $("#scheduleResumeAfter").val(data.schedule.auto_pause.resume);
+              }
+            }
+            
+            var apps = data.schedule.fb_account.fb_apps;
+
+            for (i = 0; i < apps.length; i++) { 
+              $('#scheduledPostApp').append("<option value='"+apps[i]['appid']+"'>"+apps[i]['app_name']+"</option>");
+            }
+
+            $("#scheduledPostApp").val(data.schedule.post_app);
+
+          }else{
+            alertBox(data.message,"danger","#editSchedule .messageBox",false);
+          }
+        },
+        error: function( jqXhr, textStatus, errorThrown ){ 
+          console.log(errorThrown);
+          alertBox("{{ l('Unable to complete your request') }}","danger","#editSchedule .messageBox",false);
+        },
+        complete: function() {
+          // Re-enable save schedule post btn
+          $("#editScheduleBtn").prop('disabled', false);
+          kp_preloader("off","#editSchedule .modal-body");
+        }
+      });
+
+      // Show the modal
+      $('#editSchedule').modal('show');
+    });
+
+    {# ----------------------- Saving schedule ------------------------ #}
+    $("#editScheduleBtn").click(function(){
+
+      kp_preloader("on","#editSchedule .modal-body");
+
+      var pi = $("#scheduledPostInterval","#editSchedule").val();
+      var apf = $("#scheduleResumeAfter","#editSchedule").val();
+
+      var post_interval = $("input[type='radio']:checked","#editSchedule").val() == "minute" ? pi : pi*60 ;
+
+      var resume_after = $(".autoPause input[type='radio']:checked","#editSchedule").val() == "minute" ? apf : apf*60 ;
+      
+      // Disable save schedule post
+      $("#editScheduleBtn").prop('disabled', true);
+
+      $.ajax({
+        url: '{{ base_url("schedules/action/update") }}',
+        dataType: 'json',
+        type: 'post',
+        contentType: 'application/x-www-form-urlencoded',
+        data: {
+          schedule_id: $('#ScheduleId').val(),
+          run_at: $("#scheduledPostTime","#editSchedule").val(),
+          post_interval: post_interval,
+          post_app: $("#scheduledPostApp","#editSchedule").val(),
+          fb_account: $("#scheduledFbAccount","#editSchedule").val(),
+          pause_after: $("#schedulePauseAfter","#editSchedule").val(),
+          resume_after: resume_after,
+
+          repeat_every: $("#repeatEvery","#editSchedule").val(),
+          end_on: $("#end_on","#editSchedule").val(),
+          
+          {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}') 
+        },
+        success: function( data, textStatus, jQxhr ){
+          if(data.status == "success"){
+            alertBox(data.message,"success","#editSchedule .messageBox",false);
+            $(document).on('hide.bs.modal','#editSchedule', function () {location.reload();});
+          }else{
+            if(data.message !== null && typeof data.message === 'object'){
+                htmlData = "<ul>";
+                Object.keys(data.message).forEach(function(key) {
+                    htmlData += "<li>" + data.message[key] + "</li>";
+                });
+                htmlData += "</ul>";
+            }else{
+                htmlData = data.message;
+            }
+            alertBox(htmlData,"danger","#editSchedule .messageBox",false);
+          }
+        },
+        error: function( jqXhr, textStatus, errorThrown ){ 
+          console.log(errorThrown);
+          alertBox("{{ l('Unable to complete your request') }}","danger","#editSchedule .messageBox",false);
+        },
+        complete: function() {
+          // Re-enable save schedule post btn
+          $("#editScheduleBtn").prop('disabled', false);
+          kp_preloader("off","#editSchedule .modal-body");
+        }
+      });
+      
+    });
+
+    $( ".togglePauseBtn" ).click(function(){
+      var schedule = $( this );
+        $.ajax({
+          url: '{{ base_url("schedules/action/toggle_schedule_pause") }}',
+          dataType: 'json',
+          type: 'post',
+          contentType: 'application/x-www-form-urlencoded',
+          data: { 
+            sid: schedule.val(),
+            {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+          },
+          success: function( data, textStatus, jQxhr ){
+              if(data.status == "success"){
+                schedule.toggleClass( "btn-warning" );
+                schedule.toggleClass( "btn-primary" );
+                schedule.find("i").toggleClass( "fa-pause" );
+                schedule.find("i").toggleClass( "fa-play" );
+                schedule.find("i").removeClass("fa-exclamation");
+              }else{
+                schedule.find("i").addClass("fa-exclamation");
+                schedule.find("i").removeClass("fa-toggle-on");
+              }
+          },
+          error: function( jqXhr, textStatus, errorThrown ){ 
+              schedule.find("i").addClass("fa-exclamation");
+              schedule.find("i").removeClass("fa-play");
+              schedule.find("i").removeClass("fa-pause");
+              console.log(errorThrown); 
+          }
+        });
+    });
+
+    {# Delete action #}
+    $("#deleteScheduleBtn").click(function(){
+      if($('tbody .checkbox:checked').length > 0){
+       $("#delete_schedule").modal("show");
+      }
+    });
+
+    $(".deleteBtn_schedule" ).click(function(){
+      kp_preloader("on","#delete_schedule .modal-body");
+      var schedules = [];
+      $('tbody .checkbox:checked').each(function(){
+        schedules.push($(this).val());
+      });
+      $.ajax({
+        url: '{{ base_url("schedules/action/delete") }}',
+        dataType: 'json',
+        type: 'post',
+        contentType: 'application/x-www-form-urlencoded',
+        data: { 
+          ids: JSON.stringify(schedules),
+          {{ config_item('csrf_token_name') }}: getCookie('{{ config_item('csrf_cookie_name') }}')
+         },
+        success: function( data, textStatus, jQxhr ){
+          if(data.status == "success"){
+            alertBox(data.message,"success",".deleteAlertBox_schedule",false,false);
+              $(".deleteBtn_schedule").prop('disabled', true);
+            $(document).on('hide.bs.modal','#delete_schedule', function () {location.reload();});
+          }else{
+            alertBox(data.message,"danger",".deleteAlertBox_schedule",false,false);
+          }
+        },
+        error: function( jqXhr, textStatus, errorThrown ){ 
+          console.log(errorThrown);
+          alertBox("{{ lang.s('Unable to complete your request') }}","danger",".deleteAlertBox_schedule",false,false);
+        },
+        complete: function(){
+          kp_preloader("off","#delete_schedule .modal-body");
+        }
+      });
+
+      $('.deleteBox_content_schedule').html("");
+    });
+
+  </script>
+{% endblock %}

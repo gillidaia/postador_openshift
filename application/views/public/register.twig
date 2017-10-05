@@ -1,0 +1,136 @@
+{% extends "base_public.twig" %}
+
+{% block title %}
+	{{ l("SIGNUP") }}
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+<div class="logmod">
+  <span class="logmod__logo">
+    {% if app_settings['site_logo_large'] is empty %}
+      <img src="{{ assets('theme/default/images/kp_logo_large.png') }}" alt="logo">
+    {% else %}
+      <img src="{{ app_settings['site_logo_large'] }}" alt="logo">
+    {% endif %}
+  </span>
+  <div class="logmod__wrapper">
+    <div class="logmod__container">
+      <ul class="logmod__tabs">
+        <li data-tabtar="lgm-1"><a href="{{ base_url('login') }}">{{ l("SIGNIN") }}</a></li>
+        <li data-tabtar="lgm-2" class="current">
+          <a href="#">
+            {{ l("SIGNUP") }}
+          </a>
+        </li>
+      </ul>
+      <div class="logmod__tab-wrapper">
+        <!-- Sign up -->
+        <div class="logmod__tab lgm-2 show">
+          <div class="logmod__heading">
+            <span class="logmod__heading-subtitle">
+              {{ l("ENTER_DETAILS_TO_CREATE_ACCOUNT") }}
+            </span>
+            {% include "blocks/flash_bag.twig" %}
+          </div>
+          <div class="logmod__form">
+            {{ form_open() }}  
+            {% if validation_errors() is not empty %}
+              <div class="alert alert-danger"> 
+                  {{ validation_errors() }}
+              </div>
+            {% endif %}
+            
+            <div class="sminputs">
+              <div class="input full">
+                <label class="string optional" for="username">
+                  {{ l("USERNAME") }}*
+                </label>
+                <input class="string optional" maxlength="255" name="username" id="username" placeholder="{{ l("USERNAME") }}" type="text" size="50" value="{{ input_post("username") }}" />
+              </div>
+            </div>
+
+              <div class="sminputs">
+
+                <div class="input string optional">
+                  <label class="string optional" for="password">
+                    {{ l('PASSWORD') }}*
+                  </label>
+                  <input class="string optional" maxlength="255" name="password" id="password" placeholder="{{ l('PASSWORD') }}" type="password" size="50" />
+                </div>
+
+                <div class="input string optional">
+                  <label class="string optional" for="password_confirm">
+                    {{ l('RE_ENTER_PASSWORD') }}*
+                  </label>
+                  <input class="string optional" maxlength="255" name="password_confirm" id="password_confirm" placeholder="{{ l('RE_ENTER_PASSWORD') }}" type="password" size="50" />
+                </div>
+
+              </div>
+
+              <div class="sminputs">
+                <div class="input full">
+                  <label class="string optional" for="email">
+                    {{ l("EMAIL") }}*
+                  </label>
+                  <input class="string optional" maxlength="255" name="email" id="email" placeholder="{{ l("EMAIL") }}" type="text" size="50" value="{{ input_post("email") }}" />
+                </div>
+              </div>
+
+              {% if app_settings['fb_login_app'] is not empty %}
+                <div class="sminputs fblogin">
+                  <fb:login-button scope="public_profile,email" onlogin="checkLoginState();" lass="fb-login-button" data-max-rows="1" data-size="large" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true">
+                  </fb:login-button>
+                </div>
+              {% endif %}
+
+              <div class="simform__actions">
+                <input type="submit" class="submit" id="signupBtn" name="signup" value="{{ l("CREATE_ACCOUNT") }}" />
+                <span class="simform__actions-sidetext">
+                  <a class="special" role="link" href="{{ base_url('account_recovery') }}">
+                  {{ l("FORGOT_PASSWORD_USERNAME") }}
+                  </a>
+                </span>
+              </div> 
+            </form>
+          </div> 
+        </div>
+      </div>
+    </div> 
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts_footer %}
+  {{ parent() }}
+
+  {% if app_settings['fb_login_app'] is not empty %}
+    <script type="text/javascript">
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '{{ app_settings['fb_login_app'] }}',
+        cookie     : true,  // enable cookies to allow the server to access 
+        xfbml      : true,  // parse social plugins on this page
+        version    : 'v2.8' // use graph api version 2.8
+      });
+    };
+
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+
+    function checkLoginState() {
+      FB.api('/me', function(response) {});
+      FB.getLoginStatus(function(response) {
+        window.location.replace("{{ base_url('user/register_third_party/facebook?token=') }}"+response.authResponse.accessToken);
+      });
+    }
+    </script>
+  {% endif %}
+
+{% endblock %}
