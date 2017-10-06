@@ -118,7 +118,7 @@ Define('DB_PASS',	'112233daia!');
 
 */
 
-Define('BASE_URL',	'http://postador-postador.7e14.starter-us-west-2.openshiftapps.com/');
+Define('BASE_URL',	'https://postadorcombr.herokuapp.com/');
 
 /*
 
