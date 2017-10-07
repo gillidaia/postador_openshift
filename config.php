@@ -98,13 +98,13 @@ define('COOKIE_NAME','kp_59d3b35ef3156');
 
 */
 
-Define('DB_HOST',	'www.postador.com.br');
+Define('DB_HOST',	'www.magesmel.com.br');
 
 define('BD_DRIVER',	'mysql');
 
-Define('DB_NAME',	'postador_postador');
+Define('DB_NAME',	'magesmel_postador');
 
-Define('DB_USER',	'postador_gil');
+Define('DB_USER',	'magesmel_gil');
 
 Define('DB_PASS',	'112233daia!');
 
